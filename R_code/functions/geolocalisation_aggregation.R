@@ -363,8 +363,8 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
                     step7: Data were aggregated according to :",paste0(list_dimension_output_modify, collapse=", "),".
                     step8: Metadata were created according to the input data and the source database.")
   
-  metadata <- list(identifier,summary ,date, lineage, spatial_resolution, start_year, final_year, temporal_resolution,temporal_resolution_unit )
-  names(metadata) <- c("identifier", "summary", "date", "lineage", "spatial_resolution","start_year","final_year", "temporal_resolution","temporal_resolution_unit")
+  metadata <- list(summary ,date, lineage, spatial_resolution, start_year, final_year, temporal_resolution,temporal_resolution_unit )
+  names(metadata) <- c( "summary", "date", "lineage", "spatial_resolution","start_year","final_year", "temporal_resolution","temporal_resolution_unit")
   
   output <- list(output_data, metadata)
   names(output) <- c("data", "metadata_list")
