@@ -357,7 +357,7 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   lineage <- paste0("step1: ",fact_name," data from Ob7 database were collated and harmonized.
                     step2: Only data included in ",bbox_extent," from ",min_date," to ",max_date," are used. 
                     ",step_3,"
-                    step4: A continius calendar was created from ",start_date," to ",final_date," with a period of ",temporal_resolution," ",temporal_resolution_unit,"(s) . The time start and time end are inclusive.
+                    step4: A continius calendar was created from ",min_date," to ",max_date," with a period of ",temporal_resolution," ",temporal_resolution_unit,"(s) . The time start and time end are inclusive.
                     step5: Each fishing data was associated to one polygon using the data geolocalisation.
                     step6:",step_6,"
                     step7: Data were aggregated according to :",paste0(list_dimension_output_modify, collapse=", "),".
