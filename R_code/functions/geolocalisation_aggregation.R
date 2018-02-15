@@ -64,7 +64,6 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   var_aggregated_value = agg_parameters$var_aggregated_value
   vessel_identifier = agg_parameters$vessel_identifier
   fact_name = agg_parameters$fact_name
-  bdd_name = agg_parameters$bdd_name
   if (fact_name =="fad"){number_days = agg_parameters$calculation_of_number_days}
   
   ######################## Select points in extent zone 
@@ -336,16 +335,12 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
    date <- as.character(Sys.time())
   min_date <- as_date(min(output_data$time_start))
   max_date <- as_date(max(output_data$time_end))
-  start_date <- str_replace_all(min_date,"-","_")
-  final_date <- str_replace_all(max_date,"-","_")
   start_year <- year(min_date)
   final_year <- year(max_date)
   spatial_resolution <-  round(spatial_reso,digits = 2)
-  spatial_resolution_id <- str_replace(spatial_resolution,".","")
   temporal_resolution <- temporal_reso
   temporal_resolution_unit <- temporal_reso_unit
-  identifier <- paste0("indian_atlantic_oceans_",fact_name,"_",spatial_resolution_id,"deg_",temporal_resolution,
-                       temporal_resolution_unit,"_",start_date,"_",final_date,"_",method_asso,"_",bdd_name, sep="")
+
   if (spatial_grid==T){
     step_3 <- paste0("step3: A regular grid composed of square polygons was created. The spatial extent is ",bbox_extent," with a resolution of ", spatial_resolution," decimal degrees.")
   } else {
