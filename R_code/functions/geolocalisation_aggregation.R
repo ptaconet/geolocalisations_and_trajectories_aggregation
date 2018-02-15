@@ -332,7 +332,7 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   # extract spatial extent from data
   bbox <- bbox(spTransform(bbox, CRS(data_crs)))
   bbox_extent <- paste("lon:", format(bbox[1], digits=2), format(bbox[2], digits=2)," lat:", format(bbox[3], digits=2), format(bbox[4], digits=2))
-   date <- as.character(Sys.time())
+  date <- as.character(Sys.time())
   min_date <- as_date(min(output_data$time_start))
   max_date <- as_date(max(output_data$time_end))
   start_year <- year(min_date)
