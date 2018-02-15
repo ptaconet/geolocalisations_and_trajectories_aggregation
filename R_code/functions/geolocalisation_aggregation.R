@@ -62,7 +62,7 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   ### aggragation parameters
   list_dimensions_output = agg_parameters$list_dimensions_output
   var_aggregated_value = agg_parameters$var_aggregated_value
-  vessel_identifier = agg_parameters$vessel_identifier
+  object_identifier = agg_parameters$object_identifier
   fact_name = agg_parameters$fact_name
   if (fact_name =="fad"){number_days = agg_parameters$calculation_of_number_days}
   
@@ -164,14 +164,14 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   # Error in RGEOSBinPredFunc(spgeom1, spgeom2, byid, func) :
   # rgeos_binpredfunc_prepared: maximum returned dense matrix size exceeded
   # separate data in some parts
-  unique_id = unique(dataset_calendar[[vessel_identifier]])
+  unique_id = unique(dataset_calendar[[object_identifier]])
   
   output_data_detail <- NULL
   compteur=0
   
   for (id_bat in unique_id){
     
-    dataset <- subset(dataset_calendar,dataset_calendar[[vessel_identifier]]==id_bat)
+    dataset <- subset(dataset_calendar,dataset_calendar[[object_identifier]]==id_bat)
     
     ######################## Create spatial point
     sp_points <- SpatialPointsDataFrame(dataset[,c("lon","lat")], dataset,proj4string = CRS(data_crs))
