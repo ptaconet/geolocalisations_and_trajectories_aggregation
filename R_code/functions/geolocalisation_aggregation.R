@@ -50,6 +50,7 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   require(rgeos)
   require(stringr)
   require(rlang)
+  source(https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R)
   
   cat("\n Treatments in progress :")
   
@@ -71,40 +72,41 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   
   cat("\n   Temporal calendar creation in progress ... ")
   
-  ######################## Clip data by time
-  ### create calendar
-  firstdate <- as_date(firstdate, tz = "UTC")
-  finaldate <- as_date(finaldate, tz = "UTC")
-  if (temporal_reso==1/2 && temporal_reso_unit=="month") {
-    ### Case : months are cut in two periods : first one from 1 to 15th, second one from 16 to month end
-    ### initialisation
-    temp_step <- 1
-    day(firstdate) <- 01
-    month(finaldate)<- month(finaldate)+1
-    finaldate <- rollback(finaldate)
-    mi_month <- firstdate
-    day(mi_month) <- 15
-    ### create the first date of each month
-    pre_calendar_1 <- seq(firstdate, finaldate, paste(temp_step, temporal_reso_unit))
-    ### create the 15th of each month
-    pre_calendar_2 <- seq(mi_month, finaldate, paste(temp_step, temporal_reso_unit))
-    ### create the calendar end
-    end_calendar <- c(pre_calendar_1[length(pre_calendar_1)] + months(temp_step)-days(1))
-    ### merge in a calendar, time_start = period beginnig, time_end = period end
-    calendar <- data.frame(time_start=sort(c(pre_calendar_1,pre_calendar_2+1)),time_end=sort(c(pre_calendar_1[2:length(pre_calendar_1)]-1,pre_calendar_2, end_calendar)))
-  } else {
-    ### Other case
-    ### create the period of time
-    pre_calendar <- seq(firstdate, finaldate, paste(temporal_reso, temporal_reso_unit))
-    ### create the calendar end
-    switch(temporal_reso_unit,
-           "day" = {end_calendar <- pre_calendar[length(pre_calendar)] + days(temporal_reso)-days(1)}, 
-           "month" = { end_calendar <- pre_calendar[length(pre_calendar)] + months(temporal_reso)-days(1)},
-           "year" = {end_calendar <- pre_calendar[length(pre_calendar)] + years(temporal_reso)-days(1)}
-    )
-    ### merge in a calendar, time_start = period beginnig, time_end = period end
-    calendar <- data.frame(time_start=pre_calendar,time_end=c(pre_calendar[2:length(pre_calendar)]-1, end_calendar))
-  }
+######################## Clip data by time
+### create calendar
+# firstdate <- as_date(firstdate, tz = "UTC")
+# finaldate <- as_date(finaldate, tz = "UTC")
+# if (temporal_reso==1/2 && temporal_reso_unit=="month") {
+#   ### Case : months are cut in two periods : first one from 1 to 15th, second one from 16 to month end
+#   ### initialisation
+#   temp_step <- 1
+#   day(firstdate) <- 01
+#   month(finaldate)<- month(finaldate)+1
+#   finaldate <- rollback(finaldate)
+#   mi_month <- firstdate
+#   day(mi_month) <- 15
+#   ### create the first date of each month
+#   pre_calendar_1 <- seq(firstdate, finaldate, paste(temp_step, temporal_reso_unit))
+#   ### create the 15th of each month
+#   pre_calendar_2 <- seq(mi_month, finaldate, paste(temp_step, temporal_reso_unit))
+#   ### create the calendar end
+#   end_calendar <- c(pre_calendar_1[length(pre_calendar_1)] + months(temp_step)-days(1))
+#   ### merge in a calendar, time_start = period beginnig, time_end = period end
+#   calendar <- data.frame(time_start=sort(c(pre_calendar_1,pre_calendar_2+1)),time_end=sort(c(pre_calendar_1[2:length(pre_calendar_1)]-1,pre_calendar_2, end_calendar)))
+# } else {
+#   ### Other case
+#   ### create the period of time
+#   pre_calendar <- seq(firstdate, finaldate, paste(temporal_reso, temporal_reso_unit))
+#   ### create the calendar end
+#   switch(temporal_reso_unit,
+#          "day" = {end_calendar <- pre_calendar[length(pre_calendar)] + days(temporal_reso)-days(1)},
+#          "month" = { end_calendar <- pre_calendar[length(pre_calendar)] + months(temporal_reso)-days(1)},
+#          "year" = {end_calendar <- pre_calendar[length(pre_calendar)] + years(temporal_reso)-days(1)}
+#   )
+#   ### merge in a calendar, time_start = period beginnig, time_end = period end
+#   calendar <- data.frame(time_start=pre_calendar,time_end=c(pre_calendar[2:length(pre_calendar)]-1, end_calendar))
+# }
+  calendar <- create_calendar(firstdate,finaldate,temporal_reso,temporal_reso_unit)
   
   cat(" ok ")
   cat("\n   Temporal treatment in progress ... ")
