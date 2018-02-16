@@ -50,8 +50,8 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   require(rgeos)
   require(stringr)
   require(rlang)
-  source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R")
-  source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories_aggregation/master/R_code/functions/create_grid.R")
+  source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R")
+  source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_grid.R")
   
   cat("\n Treatments in progress :")
   
