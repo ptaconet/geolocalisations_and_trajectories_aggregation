@@ -6,7 +6,7 @@
 # ## Summary 
 # 1. create_grid : create a continious grid comprised of spatial polygons (square)
 
-create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,centred=T){
+create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,crs,centred=T){
   #' @name create_grid
   #' @title Create continious grid 
   #' @description Create a continious grid comprised of spatial polygons (square). The algorithm uses sp package
@@ -16,6 +16,8 @@ create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,centred=T){
   #' @param latmax biggest latitude wanted for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param lonmin smallest longitude for the spatial grid in degree (range: -180 to 180), type = integer;
   #' @param lonmax biggest longitude wanted for the spatial grid in degree (range: -180 to 180), type = integer;  
+  #' @param crs a character string of projection arguments; the arguments must be entered exactly as in the PROJ.4 documentation, type=character;
+  #' @param centred put TRUE for a grid centred on zero.
   #'
   #' @return Return an object SpatialPolygon (package : sp) based on input parameters and composed by square polygons.
   #'
@@ -46,7 +48,7 @@ create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,centred=T){
       smallest_lat <- latmin + spatial_reso/2
     }
     grid = GridTopology(cellcentre.offset=c(smallest_lon,smallest_lat), cellsize=c(spatial_reso,spatial_reso), cells.dim=c(cellsdimlon,cellsdimlat))
-    sp_zone <- as.SpatialPolygons.GridTopology(grid, proj4string = CRS(data_crs))
+    sp_zone <- as.SpatialPolygons.GridTopology(grid, proj4string = CRS(crs))
     
     return(sp_zone)
   }
