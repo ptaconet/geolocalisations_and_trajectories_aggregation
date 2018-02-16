@@ -32,17 +32,17 @@ create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,crs,centred=T){
   
   ### Creates polygons grid
   ## if lat and lon are equal to [-90,90] and [-180,180], it create error in spTransform (infinite value) in the code part : "Select polygones which are covered by trajectories"
-    if (latmin== as.numeric(-90)){latmin=latmin+spatial_reso}
+    if (latmin== -90){latmin=latmin+spatial_reso}
     if (latmax== 90){latmax=latmax-spatial_reso}
-    if (lonmin== as.numeric(-180)){lonmin=lonmin+spatial_reso}
+    if (lonmin== -180){lonmin=lonmin+spatial_reso}
     if (lonmax== 180){lonmax=lonmax-spatial_reso}
     ## treatment
     cellsdimlat <-  ceiling(abs(latmax-latmin)/spatial_reso)
     cellsdimlon <-  ceiling(abs((lonmax-lonmin)/spatial_reso))
     ## create a centered grid 
     if (centred==T){
-      smallest_lon <- ceiling(lonmin/spatial_reso)*spatial_reso - spatial_reso/2
-      smallest_lat <- ceiling(latmin/spatial_reso)*spatial_reso - spatial_reso/2
+      smallest_lon <- ceiling(lonmin/spatial_reso)*spatial_reso + spatial_reso/2
+      smallest_lat <- ceiling(latmin/spatial_reso)*spatial_reso + spatial_reso/2
     } else {
       smallest_lon <- lonmin + spatial_reso/2
       smallest_lat <- latmin + spatial_reso/2
