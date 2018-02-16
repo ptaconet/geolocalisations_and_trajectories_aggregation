@@ -16,7 +16,7 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   #' @description Take a data frame with geolocalisation dimension ("lon" for longitude and "lat" for latitude), date time dimension ("time"), several data dimensions (like flag, gear...), a variable to aggregate (like catch, effort, catch at size). Generate a spatial grid with input parameter (grid extent, spatial resolution) or take an input shapefile with spatial polygons from the package sp and "label_id_geom". Generate a continuous calendar of period (day, 1/2 month, month, year) with input parameter (calendar limits, temporal resolution and temporal resolution unit). The algorithm associates input data with intersect spatial zone and intersect calendar period. When geolocalisation data are on spatial zone boundaries, 3 methods are available: (1) "equaldistribution": variable is distributed between spatial zones (equal share); (2) "random": spatial zone is chosen randomly from intersected spatial zones;  (3) "cwp": Coordinating Working Party on fishery Statistics rules establish by the Food and Agriculture Organization of the United Nations FAO. (for more information: http://www.fao.org/fishery/cwp/en). If aggregate_data is TRUE, aggregate input data by data dimensions, by space and by time. if not, the algorithm associates input data with intersect spatial zone and intersect calendar period.   
   #' 
   #' @param raw_dataset dataframe with geolocalisation objects and containing: object identifier, data dimensions,"time" for geolocalisation date time , "lat" for latitude of the position in degree, "lon"  for longitude of the position in degree, type = data.frame;
-  #' @param spatial_reso spatial resolution of the grid indegree, type = integer;
+  #' @param spatial_reso spatial resolution of the grid in degree, type = integer;
   #' @param latmin smallest latitude for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param latmax biggest latitude wanted for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param lonmin smallest longitude for the spatial grid in degree (range: -180 to 180), type = integer;
@@ -72,40 +72,8 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   
   cat("\n   Temporal calendar creation in progress ... ")
   
-######################## Clip data by time
-### create calendar
-# firstdate <- as_date(firstdate, tz = "UTC")
-# finaldate <- as_date(finaldate, tz = "UTC")
-# if (temporal_reso==1/2 && temporal_reso_unit=="month") {
-#   ### Case : months are cut in two periods : first one from 1 to 15th, second one from 16 to month end
-#   ### initialisation
-#   temp_step <- 1
-#   day(firstdate) <- 01
-#   month(finaldate)<- month(finaldate)+1
-#   finaldate <- rollback(finaldate)
-#   mi_month <- firstdate
-#   day(mi_month) <- 15
-#   ### create the first date of each month
-#   pre_calendar_1 <- seq(firstdate, finaldate, paste(temp_step, temporal_reso_unit))
-#   ### create the 15th of each month
-#   pre_calendar_2 <- seq(mi_month, finaldate, paste(temp_step, temporal_reso_unit))
-#   ### create the calendar end
-#   end_calendar <- c(pre_calendar_1[length(pre_calendar_1)] + months(temp_step)-days(1))
-#   ### merge in a calendar, time_start = period beginnig, time_end = period end
-#   calendar <- data.frame(time_start=sort(c(pre_calendar_1,pre_calendar_2+1)),time_end=sort(c(pre_calendar_1[2:length(pre_calendar_1)]-1,pre_calendar_2, end_calendar)))
-# } else {
-#   ### Other case
-#   ### create the period of time
-#   pre_calendar <- seq(firstdate, finaldate, paste(temporal_reso, temporal_reso_unit))
-#   ### create the calendar end
-#   switch(temporal_reso_unit,
-#          "day" = {end_calendar <- pre_calendar[length(pre_calendar)] + days(temporal_reso)-days(1)},
-#          "month" = { end_calendar <- pre_calendar[length(pre_calendar)] + months(temporal_reso)-days(1)},
-#          "year" = {end_calendar <- pre_calendar[length(pre_calendar)] + years(temporal_reso)-days(1)}
-#   )
-#   ### merge in a calendar, time_start = period beginnig, time_end = period end
-#   calendar <- data.frame(time_start=pre_calendar,time_end=c(pre_calendar[2:length(pre_calendar)]-1, end_calendar))
-# }
+  ######################## Clip data by time
+  ### create calendar
   calendar <- create_calendar(firstdate,finaldate,temporal_reso,temporal_reso_unit)
   
   cat(" ok ")
@@ -132,26 +100,8 @@ geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,la
   ### If spatial zones (spatialpolygondataframe with a label by polygons) is add by the user, these spatial zones is used
   ### If not a grid are create according to extent zone, spatial resolution choised by the user
   if (is.null(spatial_zone)){
-    
-    ### Creates polygons grid
-    ## if lat and lon are equal to [-90,90] and [-180,180], it create error in spTransform (infinite value) in the code part : "Select polygones which are covered by trajectories"
-    if (latmin==-90){latmin=latmin+spatial_reso}
-    if (latmax==90){latmax=latmax-spatial_reso}
-    if (lonmin==-180){lonmin=lonmin+spatial_reso}
-    if (lonmax==180){lonmax=lonmax-spatial_reso}
-    ## treatment
-    cellsdimlat <-  ceiling(abs(latmax-latmin)/spatial_reso)
-    cellsdimlon <-  ceiling(abs((lonmax-lonmin)/spatial_reso))
-    ## create a centered grid 
-    if (method_asso=="cwp"){
-      smallest_lon <- ceiling(lonmin/spatial_reso)*spatial_reso - spatial_reso/2
-      smallest_lat <- ceiling(latmin/spatial_reso)*spatial_reso - spatial_reso/2
-    } else {
-      smallest_lon <- lonmin + spatial_reso/2
-      smallest_lat <- latmin + spatial_reso/2
-    }
-    grid = GridTopology(cellcentre.offset=c(smallest_lon,smallest_lat), cellsize=c(spatial_reso,spatial_reso), cells.dim=c(cellsdimlon,cellsdimlat))
-    sp_zone <- as.SpatialPolygons.GridTopology(grid, proj4string = CRS(data_crs))
+    centred_grid=TRUE
+    sp_zone <- create_grid(latmin,latmax,lonmin,lonmax,spatial_reso,crs=data_crs,centred=centred_grid)
   } else {
     ### spatial zone add by the user
     ## class : sp, spatialPolygonsDataframe with the label of zones
