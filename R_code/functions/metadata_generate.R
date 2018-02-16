@@ -39,6 +39,8 @@ metadata_by_var <- function(vars_label_list,metadata_model,metadata_id, add_meta
     metadata <- rbind(metadata,metadata_var)
   }
   
+  metadata <- cbind(file_id=add_metadata$identifier,metadata)
+  
   return(metadata)
 }
 
