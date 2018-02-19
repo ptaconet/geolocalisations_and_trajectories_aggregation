@@ -9,7 +9,7 @@
 # 3. number_fad_and_days : calculate and aggregate the number of FAD and days by dimensions, by space and by time
 
 
-geolocalisation_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
+geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
   
   #' @name geolocation_aggregation
   #' @title Geolocation aggregation by dimensions, by space and by time
