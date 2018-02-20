@@ -33,7 +33,7 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   #' @param spatial_zone shapefile of your spatial zone with the same CRS of data if you use a irregular spatial zone (like : EEZ), type = SpatialPolygonDataframe;
   #' @param label_id_geom label use for spatial geometry in your shapefile if you use a irregular spatial zone (like : EEZ), type = character;
   #'
-  #' @return Return a list with (1) the dataframe containing data and (2) a list of metadata. If aggregate_data is TRUE, the dataframe is aggregated data by input dimensions, by space and by time. If aggregate_data is FALSE, dataframe containes input data associated with intersected spatial zones and intersected calendar periods. The calculated variable are :  distance_value : total distance for all objects in each cell of the grid for a time period in km, ndistance_value : normalize total distance for all objects in each cell of the grid for a time period, surface_value : total surface exploited for all objects in each cell of the grid for a time period in km², nsurface_value : normalize total surface exploited for all objects in each cell of the grid for a time period in km², number_of_trajectories : number object aggregated in each cell of the grid for a time period
+  #' @return Return a list with (1) the dataframe containing data and (2) a list of metadata. If aggregate_data is TRUE, the dataframe is aggregated data by input dimensions, by space and by time. If aggregate_data is FALSE, dataframe containes input data associated with intersected spatial zones and intersected calendar periods. The calculated variable are :  distance : total distance for all objects in each cell of the grid for a time period in km, ndistance : normalize total distance for all objects in each cell of the grid for a time period, surface : total surface exploited for all objects in each cell of the grid for a time period in km², nsurface : normalize total surface exploited for all objects in each cell of the grid for a time period in km², number_of_trajectories : number object aggregated in each cell of the grid for a time period
   #' 
   #' @author Chloé Dalleau, \email{chloe.dalleau@ird.fr}
   #' @keywords trajectory, aggregation, spatio-temporal resolution, distance, noralize distance, surface explored, normalize surface explored
@@ -187,16 +187,16 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
           ### Calculate the distance by objects and by polygons
           ## Note : keep if, if geolocatisations are fixed gIntersection can create NULL data
           if(!is.null(intersect_traj)){
-            distance_value <- as.data.table(round(gLength(intersect_traj,byid=T)/1000,3), keep.rownames=T)
-            colnames(distance_value) <- c("id","distance_value")
+            distance <- as.data.table(round(gLength(intersect_traj,byid=T)/1000,3), keep.rownames=T)
+            colnames(distance) <- c("id","distance")
           }
           ### Calculate the surface exploited by objects and by polygons
-          surface_value <- as.data.table(round(gArea(intersect_buffer,byid=T)/1000000,3), keep.rownames=T)
-          colnames(surface_value) <- c("id","surface_value")
+          surface <- as.data.table(round(gArea(intersect_buffer,byid=T)/1000000,3), keep.rownames=T)
+          colnames(surface) <- c("id","surface")
           
           
           ######################## Merge all the calculated variables
-          var_cal <- merge(distance_value,surface_value, by="id",all= T)
+          var_cal <- merge(distance,surface, by="id",all= T)
           var_cal[is.na(var_cal)] <- 0
           
           
@@ -253,8 +253,8 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
 
   
   ### Calulate normalize data
-  output_data_detail$ndistance_value <- sapply(output_data_detail[,"distance_value"], function(x) (x-min(x))/(max(x)-min(x)))
-  output_data_detail$nsurface_value <- sapply(output_data_detail[,"surface_value"], function(x) (x-min(x))/(max(x)-min(x)))
+  output_data_detail$ndistance <- sapply(output_data_detail[,"distance"], function(x) (x-min(x))/(max(x)-min(x)))
+  output_data_detail$nsurface <- sapply(output_data_detail[,"surface"], function(x) (x-min(x))/(max(x)-min(x)))
   
   
   ######################## Aggregation of data
@@ -267,18 +267,18 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
     dimensions <-c("geom_wkt", if(is.null(spatial_zone)==FALSE){"geographic_identifier_label"}, "time_start", "time_end", list_dim_output)
     
     ### Aggregation (data.table package)
-    output_data_agg <- output_data_detail %>% group_by_(.dots=dimensions) %>% summarise(distance_value=round(sum(distance_value),3),surface_value=round(sum(surface_value),3), number_of_trajectories=n())# summarise(distance=round(sum(distance),3),surface=round(sum(surface),3) )
+    output_data_agg <- output_data_detail %>% group_by_(.dots=dimensions) %>% summarise(distance=round(sum(distance),3),surface=round(sum(surface),3), number_of_trajectories=n())# summarise(distance=round(sum(distance),3),surface=round(sum(surface),3) )
     output_data_agg <- data.table(output_data_agg)
     ### Calculate normalize data
-    ndistance_value <- (output_data_agg[,"distance_value"]-min(output_data_agg[,"distance_value"]))/(max(output_data_agg[,"distance_value"])-min(output_data_agg[,"distance_value"]))
-    colnames(ndistance_value)<-"ndistance_value"
-    nsurface_value<- (output_data_agg[,"surface_value"]-min(output_data_agg[,"surface_value"]))/(max(output_data_agg[,"surface_value"])-min(output_data_agg[,"surface_value"]))
-    colnames(nsurface_value)<-"nsurface_value"
+    ndistance <- (output_data_agg[,"distance"]-min(output_data_agg[,"distance"]))/(max(output_data_agg[,"distance"])-min(output_data_agg[,"distance"]))
+    colnames(ndistance)<-"ndistance"
+    nsurface<- (output_data_agg[,"surface"]-min(output_data_agg[,"surface"]))/(max(output_data_agg[,"surface"])-min(output_data_agg[,"surface"]))
+    colnames(nsurface)<-"nsurface"
     ## Bind all data
     
-    output_data <- data.table(output_data_agg[,dimensions, with=FALSE], output_data_agg[,"distance_value"],
-                              ndistance_value, output_data_agg[,"surface_value"],
-                              nsurface_value, output_data_agg[,"number_of_trajectories"] 
+    output_data <- data.table(output_data_agg[,dimensions, with=FALSE], output_data_agg[,"distance"],
+                              ndistance, output_data_agg[,"surface"],
+                              nsurface, output_data_agg[,"number_of_trajectories"] 
     )
     cat("ok \n")
     
