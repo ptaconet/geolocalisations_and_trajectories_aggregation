@@ -156,16 +156,21 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         ### ERROR memory space : alternative solution is a loop
         # buffer_sp_traj <- gBuffer(sp_trajectories, capStyle = "ROUND", joinStyle = "ROUND", byid = T, width = buffer_size*1000)
         cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
+        count=0
         for (i in 1:length(sp_trajectories)){ 
-          buffer <- gBuffer(sp_trajectories[i], capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
-          if (i==1){
-            buffer_sp_traj <- buffer
-          } else {
-            buffer_sp_traj <- union(buffer_sp_traj,buffer)
-          }
-          ### release space memory
-          rm(buffer)
-          cat(paste0(i," "))
+          traj <- gSimplify(sp_trajectories[i],tol=0.00001))
+          if (gIsValid(traj)==T){
+            buffer <- gBuffer(traj, capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
+            count=count+1
+            if (count==1){
+                buffer_sp_traj <- buffer
+            } else {
+                buffer_sp_traj <- union(buffer_sp_traj,buffer)
+            }
+             ### release space memory
+            rm(buffer)
+            cat(paste0(count," "))
+          } 
         }
 
         
