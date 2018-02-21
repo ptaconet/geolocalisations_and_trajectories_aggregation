@@ -154,25 +154,25 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         sp_trajectories <- spTransform(sp_trajectories , CRS( data_crs_proj ) )
         ### Creat a buffer arround the lines for surface calculation
         ### ERROR memory space : alternative solution is a loop
-        # buffer_sp_traj <- gBuffer(sp_trajectories, capStyle = "ROUND", joinStyle = "ROUND", byid = T, width = buffer_size*1000)
-        cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
-        count=0
-        for (i in 1:length(sp_trajectories)){ 
-          traj <- gSimplify(sp_trajectories[i],tol=0.001)
-          if (gIsValid(traj)==T){
-            buffer <- gBuffer(sp_trajectories[i], capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
-            buffer <- gBuffer(buffer, width = 0)
-            count=count+1
-            if (count==1){
-                buffer_sp_traj <- buffer
-            } else {
-                buffer_sp_traj <- union(buffer_sp_traj,buffer)
-            }
-             ### release space memory
-            #rm(buffer)
-            cat(paste0(count," "))
-          } 
-        }
+         buffer_sp_traj <- gBuffer(sp_trajectories, capStyle = "ROUND", joinStyle = "ROUND", byid = T, width = buffer_size*1000)
+    #    cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
+     #   count=0
+      #  for (i in 1:length(sp_trajectories)){ 
+       #   traj <- gSimplify(sp_trajectories[i],tol=0.001)
+        #  if (gIsValid(traj)==T){
+         #   buffer <- gBuffer(sp_trajectories[i], capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
+          #  buffer <- gBuffer(buffer, width = 0)
+           # count=count+1
+   #         if (count==1){
+    #            buffer_sp_traj <- buffer
+     #       } else {
+      #          buffer_sp_traj <- union(buffer_sp_traj,buffer)
+       #     }
+        #     ### release space memory
+         #   #rm(buffer)
+          #  cat(paste0(count," "))
+     #     } 
+      #  }
 
         
         # ### test : plot trajectoire
