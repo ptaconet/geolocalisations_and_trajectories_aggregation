@@ -114,7 +114,7 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   ### Initialisation of final data
   output_data_detail <- NULL
   ## dimensions list to split data
-  list_dim <- setdiff(names(dataset_calendar), c("time", "lat", "lon", "part"))
+  list_dim <- setdiff(names(dataset_calendar), c("time", "lat", "lon"))
   compteur = 0
   
   for (id in unique_idobject){
@@ -154,7 +154,11 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
         for (i in 1:length(sp_trajectories)){ 
           buffer <- gBuffer(sp_trajectories[i], capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
-          buffer_sp_traj <- union(buffer_sp_traj,buffer)
+          if (i==1){
+            buffer_sp_traj <- buffer
+          } else {
+            buffer_sp_traj <- union(buffer_sp_traj,buffer)
+          }
           cat(paste0(i," "))
         }
 
