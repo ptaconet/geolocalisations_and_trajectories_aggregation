@@ -17,7 +17,7 @@
 # wps.in: id = spatial_reso, type = real, title = If spatial_grid=T, Spatial resolution that fits sides of the grid square polygons in degree. Range of values: 0.001° to 5°., value = "1";
 # wps.in: id = spatial_zone, type = real, title = If spatial_grid=F, SaptialDataFrame (package "sp") containing a irregular spatial zones with the same CRS of data (like : EEZ), value = NULL;
 # wps.in: id = label_id_geom, type = character, title = If spatial_grid=F, label used for spatial geometry in your shapefile;
-# wps.in: id = label_id_geom, type =character, title = Label of your spatial zone (like: grid, EEZ, ...);
+# wps.in: id = label_spatial_zone, type =character, title = Label of your spatial zone (like: grid, EEZ, ...);
 # wps.in: id = temporal_reso , type = integer, title = Temporal resolution of calendar in day or month., value = "15";
 # wps.in: id = temporal_reso_unit , type = character, title = Time unit of temporal resolution, value = "day|month|year";
 # wps.in: id = first_date , type = date, title = First date of calendar, value = "1800-01-01";
