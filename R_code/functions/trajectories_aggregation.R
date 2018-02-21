@@ -158,9 +158,10 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
         count=0
         for (i in 1:length(sp_trajectories)){ 
-          traj <- gSimplify(sp_trajectories[i],tol=0.00001)
+          traj <- gSimplify(sp_trajectories[i],tol=0.001)
           if (gIsValid(traj)==T){
-            buffer <- gBuffer(traj, capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
+            clean_topo_traj <- gBuffer(traj, width = 0)
+            buffer <- gBuffer(clean_topo_traj, capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
             count=count+1
             if (count==1){
                 buffer_sp_traj <- buffer
