@@ -149,8 +149,15 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         sp_trajectories <- SpatialLines(trajectories, proj4string = CRS(data_crs))
         sp_trajectories <- spTransform(sp_trajectories , CRS( data_crs_proj ) )
         ### Creat a buffer arround the lines for surface calculation
-        buffer_sp_traj <- gBuffer(sp_trajectories, capStyle = "ROUND", byid = T, width = buffer_size*1000)
-        
+        ### ERROR memory space : alternative solution is a loop
+        # buffer_sp_traj <- gBuffer(sp_trajectories, capStyle = "ROUND", joinStyle = "ROUND", byid = T, width = buffer_size*1000)
+        cat(paste0("\n buffer step (",length(sp_trajectories),") :"))
+        for (i in 1:length(sp_trajectories)){ 
+          buffer <- gBuffer(sp_trajectories[i], capStyle = "ROUND", joinStyle = "ROUND", width = buffer_size*1000)
+          buffer_sp_traj <- union(buffer_sp_traj,buffer)
+          cat(paste0(i," "))
+        }
+
         
         # ### test : plot trajectoire
         # # id = unique_idobject[4]
