@@ -1,0 +1,222 @@
+
+####################### Aggregation of geolocalistions data according to spatiotemporal resolution from ob7 database
+# Author : Chloe Dalleau, Geomatic engineer (IRD)
+# Supervisors : Paul Taconet (IRD), Julien Barde (IRD)
+# Date : 15/02/2018 
+# 
+# wps.des: id = aggregation_location, title = Aggregation of geolocalisation data according to spatiotemporal resolution from ob7 database, abstract = Calculation of facts (ie. : catch, catch at size, effort and fad) by spatiotemporal resolution from ob7 database.;
+# wps.in: id = file_name, type = character, title = Name of the R script which contains all the specific parameter of the fact (connection query and column names for sql data AND aggregation parameters : list of output dimensions - aggregate variable name - column name of object identifier - fact name) , value = "catch_balbaya|effort_balbaya|catch_at_size_t3p|catch_observe|effort_observe|catch_at_size_observe|fad_fad";
+# wps.in: id = file_path_parameter, type = character, title = File path of the R script which contains all the specific parameter of the fact;
+# wps.in: id = sql_limit, type = integer, title = SQL limit for the query., value = "1000";
+# wps.in: id = latmin, type = integer, title = Smallest latitude of spatial zone extent in degree. Range of values: -90° to 90°., value = "-90";
+# wps.in: id = latmax, type = integer, title = Biggest latitude of spatial zone extent in degree. Range of values: -90° to 90°., value = "90";
+# wps.in: id = lonmin, type = integer, title =  Smallest longitude of spatial zone extent in degree. Range of values : -180° to 180°., value = "-180";
+# wps.in: id = lonmax, type = integer, title =  Biggest longitude of spatial zone extent in degree. Range of values : -180° to 180°., value = "180";
+# wps.in: id = spatial_grid, type = boolean, title = Put TRUE to use a spatial grid as spatial zone., value = "TRUE";
+# wps.in: id = data_crs, type = boolean, title = a character string of projection arguments of data. The arguments must be entered exactly as in the PROJ.4 documentation, vale="+init=epsg:4326 +proj=longlat +datum=WGS84";
+# wps.in: id = spatial_reso, type = real, title = If spatial_grid=T, Spatial resolution that fits sides of the grid square polygons in degree. Range of values: 0.001° to 5°., value = "1";
+# wps.in: id = spatial_zone, type = real, title = If spatial_grid=F, SaptialDataFrame (package "sp") containing a irregular spatial zones with the same CRS of data (like : EEZ), value = NULL;
+# wps.in: id = label_id_geom, type = character, title = If spatial_grid=F, label used for spatial geometry in your shapefile;
+# wps.in: id = label_id_geom, type =character, title = Label of your spatial zone (like: grid, EEZ, ...);
+# wps.in: id = temporal_reso , type = integer, title = Temporal resolution of calendar in day or month., value = "15";
+# wps.in: id = temporal_reso_unit , type = character, title = Time unit of temporal resolution, value = "day|month|year";
+# wps.in: id = first_date , type = date, title = First date of calendar, value = "1800-01-01";
+# wps.in: id = final_date , type = date, title = Final date of calendar, value = "2100-01-01";
+# wps.in: id = method_asso, type character. title = Method used for data aggregation random method or equal distribution method are available. Value : "random|equaldistribution"
+# wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
+# wps.in: id = program_observe, type = boolean. title = For data from observe database, put TRUE to have the dimension "program" in output data, value : "TRUE|FALSE"
+# wps.out: id = output_data, type = text/zip, title = Aggregated data by space and by time; 
+#########################
+
+######################### ######################### ######################### 
+# Packages
+######################### ######################### ######################### 
+
+# clean the global environnement
+rm(list=ls())
+## Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# Packages
+library("RPostgreSQL")
+library(tictoc)
+library(data.table)
+library(dplyr)
+library(sp)
+library(rgeos)
+library(lubridate)
+library(stringr)
+library(rlang)
+# function
+source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/geolocalisations_aggregation.R")
+source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/metadata_generate.R")
+#time start
+tic.clear()
+tic()
+
+######################### ######################### ######################### 
+# Initialisation
+######################### ######################### ######################### 
+
+### Import data from database
+## fact selection
+file_name <- "catch_balbaya"
+file_path_parameter <- paste0("input/geolocalisations_aggregation/",file_name,".R")
+source(file_path_parameter)
+## SQL limit (put NULL if no limit)
+sql_limit <- 1000
+
+# CRS of sptial data
+data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
+
+### spatial resolution
+spatial_grid <- T
+## zone extent : latittude (in degree) range -90:90, longitude (in degree) range -180:180
+latmin <- -90
+latmax <- 90
+lonmin <- -180
+lonmax <- 180
+if (spatial_grid==T) {
+  ### Definition of spatial grid, squares compound
+  ## data spatial resoltion in degree
+  spatial_reso <- 1
+  spatial_zone=NULL
+  label_id_geom = NULL
+  label_spatial_zone = "grid"
+} else {
+  ### EEZ exemple
+  ## latitude and longitude 
+  xmin_plot=latmin
+  xmax_plot=latmax
+  ymin_plot=lonmin
+  ymax_plot=lonmax
+  ## Get the EEZ from the marineregions webiste
+  dsn<-paste("WFS:http://geo.vliz.be/geoserver/MarineRegions/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:eez&maxFeatures=200&BBOX=",xmin_plot,",",ymin_plot,",",xmax_plot,",",ymax_plot,sep="")
+  eez_marineregion_layer<-readOGR(dsn,"MarineRegions:eez")
+  ## Change the crs of spatial zone for the data crs 
+  spatial_zone=spTransform(eez_marineregion_layer, CRS(data_crs))
+  ## indicate the label of the spatial zone
+  label_id_geom <- "geoname"
+  label_spatial_zone <- "EEZ"
+  ## Plot 
+  # col_eez<-rgb(red=0, green=0, blue=102,alpha=70,maxColorValue=255)
+  # map("world", fill=TRUE, col="gray81", bg="white", xlim=c(xmin_plot,xmax_plot),ylim=c(ymin_plot,ymax_plot))
+  # plot(eez_marineregion_layer,col=col_eez,add=TRUE,lwd=0.6,border="bisque4")
+  spatial_reso <-NULL
+} 
+
+### Definition of calendar
+## time extent , tz = "UTC"
+first_date <-"1800-01-01"
+final_date <- "2017-12-31"
+## for mi-month put temporal_reso = 1/2 and temporal_reso_unit "month"
+temporal_reso <- 1
+temporal_reso_unit <- "month"
+
+### Processing of data
+# method of association between fishery data and spatial zone when a location is on a boundary
+# methods are :"equaldistribution", "random" or "cwp"
+# * "equaldistribution" method: If a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons
+# * "random": If a fishing data is on several polygons (borders case) the polygon is chosen randomly.
+# * "cwp" The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)
+method_asso = "random"
+
+### Put true to have aggregated data
+aggregate_data =T
+### Put true to have program dimension for observe database
+program_observe=F
+
+cat("Initialisation ... ok \n")
+
+
+######################### ######################### ######################### 
+# Database connection
+######################### ######################### ######################### 
+
+cat("Database connection in progress ... ")
+## loads the PostgreSQL driver
+drv <- dbDriver("PostgreSQL")
+
+## creates a connection to the postgres database
+## note that "con" will be used later in each connection to the database
+# call upon database manager for password (ob7@listes.ird.fr)
+# loads the PostgreSQL driver
+drv <- dbDriver("PostgreSQL")
+warning("Please inform the database manager of your database usage. \n This data are confidential. For diffusion please check with the database manager.")
+parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
+
+con <- dbConnect(drv, dbname = parameter_bdd$dbname,
+                 host = parameter_bdd$host, port = parameter_bdd$port,
+                 user = parameter_bdd$user, password = parameter_bdd$password)
+
+### Logging of dataframe
+# dataset contains non aggregated data
+dataset<-dbGetQuery(con, parameter_bdd$query)
+cat(" ok \n")
+
+### Disconnection of data base
+dbDisconnect(con)
+### dataset colnames store in file_name.R
+colnames(dataset) <- parameter_bdd$colnames_dataset
+
+### Csv files case
+# file_path_input_data <- paste0("fine_data/",file_name, ".csv")
+# dataset <- read.csv(file_path_input_data, sep=",", header = T)
+
+######################### ######################### ######################### 
+# Treatments
+######################### ######################### ######################### 
+## for test
+# dataset=dataset[1:750,]
+
+### aggregation parameter
+if("program" %in% colnames(dataset)){
+  agg_parameters <- aggregation_parameters(program_observe)
+} else {
+  agg_parameters <- aggregation_parameters()
+}
+
+
+## nom de colonne obligatoire : time, lat, lon
+output <- geolocalisations_aggregation(raw_dataset=dataset,spatial_reso=spatial_reso,latmin=latmin,latmax=latmax,lonmin=lonmin,lonmax=lonmax,
+                           firstdate=first_date,finaldate=final_date,temporal_reso=temporal_reso,
+                           temporal_reso_unit=temporal_reso_unit,aggregate_data=aggregate_data,aggregation_parameters=agg_parameters,
+                           spatial_zone=spatial_zone,label_id_geom=label_id_geom)
+
+output_dataset <- output$data
+
+
+
+# ######################### ######################### ######################### 
+# # Metadata
+# ######################### ######################### ######################### 
+metadata_input <- read.csv("input/geolocalisations_aggregation/metadata_input.csv", sep=",", header = T)
+
+metadata_id <- paste(file_name,label_spatial_zone,sep="_")
+add_metadata <- output$metadata_list
+add_metadata$table_sql_query <- parameter_bdd$query
+min_date <- as_date(min(output_dataset$time_start))
+max_date <- as_date(max(output_dataset$time_end))
+start_date <- str_replace_all(min_date,"-","_")
+final_date <- str_replace_all(max_date,"-","_")
+spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
+temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
+### data identifier
+identifier <- paste0("indian_atlantic_oceans_",agg_parameters$fact_name,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg","_")}else{label_spatial_zone},temporal_resolution_id,
+                     add_metadata$temporal_resolution_unit,"_",start_date,"_",final_date,"_",method_asso,"_",agg_parameters$bdd_name, sep="")
+
+
+
+output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=metadata_id,dataset_id=identifier,add_metadata=add_metadata)
+
+# ######################### ######################### ######################### 
+# # Create CSV file
+# ######################### ######################### ######################### 
+
+if(dir.exists("output")==F){
+  dir.create("output")
+}
+filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
+filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")
+
+write.csv(output_dataset, file = filepath_dataset, row.names = FALSE)
+write.csv(output_metadata, file = filepath_metadata, row.names = FALSE)
