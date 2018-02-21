@@ -83,6 +83,8 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   dataset_calendar <- data.table(dataset_table[index$xid,], calendar[index$yid,])
   ### list of used period in calendar
   data_calendar <-  calendar[unique(index$yid),]
+  ### release space memory
+  rm(dataset_faketime_s_e)
   
   ######################## Create polygon
   ### Creates spatial polygons for data aggregation
@@ -147,6 +149,8 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
         }
         ### Convert Lines to SpatialLines
         sp_trajectories <- SpatialLines(trajectories, proj4string = CRS(data_crs))
+        ### release space memory
+        rm(trajectories)
         sp_trajectories <- spTransform(sp_trajectories , CRS( data_crs_proj ) )
         ### Creat a buffer arround the lines for surface calculation
         ### ERROR memory space : alternative solution is a loop
@@ -159,6 +163,8 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
           } else {
             buffer_sp_traj <- union(buffer_sp_traj,buffer)
           }
+          ### release space memory
+          rm(buffer)
           cat(paste0(i," "))
         }
 
@@ -251,6 +257,9 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
           } else {
             bbox <- gEnvelope(polygons)
           }
+          ### release space memory
+          rm(polygons)
+          rm(output_data)
           
         }
         
