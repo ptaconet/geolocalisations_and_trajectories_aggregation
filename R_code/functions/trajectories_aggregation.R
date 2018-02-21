@@ -171,7 +171,7 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
              ### release space memory
             #rm(buffer)
             cat(paste0(count," "))
-         # } 
+          } 
         }
 
         
