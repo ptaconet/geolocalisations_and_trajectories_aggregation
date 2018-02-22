@@ -60,10 +60,10 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ### Import data from database
 ## fact selection
 file_name <- "catch_balbaya"
-file_path_parameter <- paste0("input/geolocalisations_aggregation/",file_name,".R")
+file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
 source(file_path_parameter)
 ## SQL limit (put NULL if no limit)
-sql_limit <- 1000
+sql_limit <- 7000
 
 # CRS of sptial data
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
@@ -78,7 +78,7 @@ lonmax <- 180
 if (spatial_grid==T) {
   ### Definition of spatial grid, squares compound
   ## data spatial resoltion in degree
-  spatial_reso <- 1
+  spatial_reso <- 5
   spatial_zone=NULL
   label_id_geom = NULL
   label_spatial_zone = "grid"
@@ -147,8 +147,8 @@ warning("Please inform the database manager of your database usage. \n This data
 parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
 
 # Add the user and password for database access
-parameter_bdd$user <- "****"
-parameter_bdd$password <- "*****"
+parameter_bdd$user <- "***"
+parameter_bdd$password <- "***"
 
 con <- dbConnect(drv, dbname = parameter_bdd$dbname,
                  host = parameter_bdd$host, port = parameter_bdd$port,
