@@ -5,7 +5,7 @@
 # Date : 15/02/2018 
 # 
 # wps.des: id = aggregation_location, title = Aggregation of geolocalisation data according to spatiotemporal resolution from ob7 database, abstract = Calculation of facts (ie. : catch, catch at size, effort and fad) by spatiotemporal resolution from ob7 database.;
-# wps.in: id = file_name, type = character, title = Name of the R script which contains all the specific parameter of the fact (connection query and column names for sql data AND aggregation parameters : list of output dimensions - aggregate variable name - column name of object identifier - fact name) , value = "catch_balbaya|effort_balbaya|catch_at_size_t3p|catch_observe|effort_observe|catch_at_size_observe|fad_fad";
+# wps.in: id = file_name, type = character, title = Name of the R script which contains all the specific parameter of the fact (connection query and column names for sql data AND aggregation parameters : list of output dimensions - aggregate variable name - column name of object identifier - fact name) , value = "catch_balbaya|effort_balbaya|catch_at_size_t3p|catch_observe|effort_observe|catch_at_size_observe|fad_fads";
 # wps.in: id = file_path_parameter, type = character, title = File path of the R script which contains all the specific parameter of the fact;
 # wps.in: id = sql_limit, type = integer, title = SQL limit for the query., value = "1000";
 # wps.in: id = latmin, type = integer, title = Smallest latitude of spatial zone extent in degree. Range of values: -90° to 90°., value = "-90";
