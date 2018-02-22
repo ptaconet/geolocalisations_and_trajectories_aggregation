@@ -25,6 +25,9 @@ create_calendar <- function(firstdate,finaldate,temporal_reso,temporal_reso_unit
   #'  calendar <- create_calendar(firstdate="2010-01-01",finaldate="2010-12-31",temporal_reso=5,temporal_reso_unit="day")
   
   ### Package 
+  if(!require(lubridate)){
+    install.packages(lubridate)
+  }
   require(lubridate)
   
   ### Initialisation

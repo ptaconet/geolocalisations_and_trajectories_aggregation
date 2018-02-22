@@ -34,26 +34,27 @@
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by dimensions, by space and by time; 
 #########################
 
-######################### Set working directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-######################## Package
-require(data.table)
-library(dplyr)
-library(lubridate)
-library(raster)
-library(rgeos)
-library(sp)
-library(stringr)
-library(tictoc)
+######################## Packages
+all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang")
+for(package in all_packages){
+  if (!require(package,character.only = TRUE)) {
+    install.packages(package)  
+  }
+  require(package,character.only = TRUE)
+}
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/trajectories_aggregation.R")
 source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories_aggregation/master/R_code/functions/metadata_generate.R")
-library(rlang)
+
 
 
 # timer : 
 tic.clear()
 tic()
+
+######################### Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 ######################## Input data 
 
 ## name of the csv input, this file has to be a folder named "input" (with extension)
@@ -176,7 +177,7 @@ vars_label_list <- c("distance", "normalize_distance","surface","normalize_surfa
 # metadata identifier to select the right metadata model
 metadata_id <- paste0(object_type,"_",vars_label_list,if(aggregate_data==T){"_aggregation"},"_",label_spatial_zone)
 # metadata model
-metadata_input <- read.csv("input/metadata_input.csv", sep=",", header = T)
+metadata_input <- read.csv("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/metadata_input.csv", sep=",", header = T)
 # metadata created throughout treatment
 add_metadata <- output$metadata_list
 # create identifier file name

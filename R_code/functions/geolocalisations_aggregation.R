@@ -42,14 +42,13 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
 
 
   ######################## Package
-  require(data.table)
-  require(lubridate)
-  require(data.table)
-  require(dplyr)
-  require(sp)
-  require(rgeos)
-  require(stringr)
-  require(rlang)
+  all_packages <- c("data.table","lubridate","dplyr","sp","rgeos","rgdal","stringr","rlang")
+  for(package in all_packages){
+    if (!require(package,character.only = TRUE)) {
+      install.packages(package)  
+    }
+    require(package,character.only = TRUE)
+  }
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R")
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_grid.R")
   

@@ -34,19 +34,15 @@
 
 # clean the global environnement
 rm(list=ls())
-## Set working directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 # Packages
-library("RPostgreSQL")
-library(tictoc)
-library(data.table)
-library(dplyr)
-library(sp)
-library(rgeos)
-library(rgdal)
-library(lubridate)
-library(stringr)
-library(rlang)
+all_packages <- c("rstudioapi","RPostgreSQL","tictoc","data.table","dplyr","sp","rgeos","rgdal","lubridate","stringr","rlang")
+for(package in all_packages){
+  if (!require(package,character.only = TRUE)) {
+    install.packages(package)  
+  }
+  require(package,character.only = TRUE)
+}
 # function
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/geolocalisations_aggregation.R")
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/metadata_generate.R")
@@ -54,6 +50,8 @@ source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajecto
 tic.clear()
 tic()
 
+## Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################### ######################### ######################### 
 # Initialisation
 ######################### ######################### ######################### 
