@@ -67,11 +67,15 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   ######################## Select points in extent zone 
   dataset_table <- dataset_table[between(lon, lonmin,lonmax) & between(lat, latmin,latmax)]
   
+  cat("\n   Temporal calendar creation in progress ... ")
   
   ######################## Merge data and a calendar (based on temporal resolution choised) 
   ### Creates calendar
   calendar <- create_calendar(firstdate=firstdate,finaldate=finaldate,temporal_reso,temporal_reso_unit)
   calendar <- data.table(calendar)
+  
+  cat(" ok ")
+  cat("\n   Temporal treatment in progress ... ")
   
   ### Join dataset and calendar
   ## initialisation
@@ -85,6 +89,9 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   data_calendar <-  calendar[unique(index$yid),]
   ### release space memory
   rm(dataset_faketime_s_e)
+  
+  cat(" ok ")
+  cat("\n   Spatial zone creation in progress ... ")
   
   ######################## Create polygon
   ### Creates spatial polygons for data aggregation
@@ -104,6 +111,9 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   ## Note : keep grid creation in data_crs and after do spTransform
   data_crs_proj <- "+init=epsg:3395"
   sp_zone <- spTransform(sp_zone , CRS(data_crs_proj) )
+  
+  cat(" ok ")
+  cat("\n   Spatial treatment in progress : ")
   
   ### Error Rgeos :
   ## Error in RGEOSBinPredFunc(spgeom1, spgeom2, byid, func) :
@@ -251,7 +261,7 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
           
           
           compteur = compteur +1
-          cat(paste0("\n           ",compteur," object(s) trajectories created."))
+          cat(paste0("\n             ",compteur," object(s) trajectories created."))
           
           ### Store data for the loop
           output_data_detail <- data.table(rbind(output_data_detail,output_data))

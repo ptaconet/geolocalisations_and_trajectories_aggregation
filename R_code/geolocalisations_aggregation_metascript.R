@@ -190,7 +190,8 @@ output_dataset <- output$data
 # ######################### ######################### ######################### 
 # # Metadata
 # ######################### ######################### ######################### 
-metadata_input <- read.csv("input/geolocalisations_aggregation/metadata_input.csv", sep=",", header = T)
+
+metadata_input <- read.csv("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv", sep=",", header = T)
 
 metadata_id <- paste(file_name,label_spatial_zone,sep="_")
 add_metadata <- output$metadata_list
