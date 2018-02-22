@@ -267,7 +267,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     list_dimensions_output_modify <- c("geom_wkt", "time_start", "time_end",list_dimensions_output)
 
     #sym :take strings as input and turn them into symbols (library rlang )
-    output_data_agg <- output_data_detail %>% group_by_(.dots=list_dimensions_output_modify) %>% summarise(sum=sum(!!sym(var_aggregated_value)), number=n()) %>% setNames( c(list_dimension_output_modify, var_aggregated_value, "number_of_points"))
+    output_data_agg <- output_data_detail %>% group_by_(.dots=list_dimensions_output_modify) %>% summarise(sum=sum(!!sym(var_aggregated_value)), number=n()) %>% setNames( c(list_dimensions_output_modify, var_aggregated_value, "number_of_points"))
     
     output_data <- data.table(output_data_agg) 
     list_dimensions_output_metadata <- list_dimensions_output_modify
