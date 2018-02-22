@@ -201,8 +201,8 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 if(dir.exists("output")==F){
   dir.create("output")
 }
-filepath_dataset = paste("output/",identifier,".csv", sep="")
-filepath_metadata = paste("output/metadata_",identifier,".csv", sep="")
+filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")
+filepath_metadata = paste("output/trajectories_aggregation/metadata_",identifier,".csv", sep="")
 
 write.csv(output_dataset, file = filepath_dataset, row.names = FALSE)
 write.csv(output_metadata, file = filepath_metadata, row.names = FALSE)
