@@ -1,4 +1,4 @@
-##fdfs
+
 ####################### Aggregation of geolocalistions data according to spatiotemporal resolution from ob7 database
 # Author : Chloe Dalleau, Geomatic engineer (IRD)
 # Supervisors : Paul Taconet (IRD), Julien Barde (IRD)
