@@ -76,24 +76,23 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   ######################## Clip data by time
   ### create calendar
   calendar <- create_calendar(firstdate,finaldate,temporal_reso,temporal_reso_unit)
+  calendar <- data.table(calendar)
   
   cat(" ok ")
   cat("\n   Temporal treatment in progress ... ")
   
   ### Join dataset and calendar
-  ### initialisation
-  x <- data.table(dataset_table, time_start=as_date(dataset_table$time), time_end=as_date(dataset_table$time))
-  y <- as.data.table(calendar)
-  setkey(y, time_start, time_end)
-  ### select the index calendar for each "time" of data
-  index <- foverlaps(x,y, by.x = c("time_start","time_end"),by.y = c("time_start","time_end"), type="within", nomatch=0, which = T)
+  ## initialisation
+  dataset_faketime_s_e <- data.table(dataset_table, time_start=as_date(dataset_table$time), time_end=as_date(dataset_table$time))
+  setkey(calendar, time_start, time_end) # is used in the function : foverlaps
+  ## select the index calendar for each "time" of data
+  index <- foverlaps(x=dataset_faketime_s_e,y=calendar, by.x = c("time_start","time_end"),by.y = c("time_start","time_end"), type="within", nomatch=0, which = T)
   ### join data and calendar
   dataset_calendar <- data.table(dataset_table[index$xid,], calendar[index$yid,])
   ### list of used period in calendar
   data_calendar <-  calendar[unique(index$yid),]
   
   cat(" ok ")
-  
   cat("\n   Spatial zone creation in progress ... ")
   
   ######################## Create polygon
