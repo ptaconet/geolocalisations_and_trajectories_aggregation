@@ -31,6 +31,7 @@
 # wps.in: id = final_date , type = date, title = Final date of calendar, value = "2100-01-01";
 # wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
 # wps.in: id = list_dim_output, type = boolean. title = List of dmensions from input data and for output data (like : c("flag","gear"), NULL, ...), value : "TRUE|FALSE"
+# wps.in: id = file_path_metadata_model, type = character. title = File path of the metadata model;
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by dimensions, by space and by time; 
 #########################
 
@@ -126,6 +127,10 @@ if (spatial_grid==T) {
   spatial_reso <-NULL
 } 
 
+# metadata model
+file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/metadata_input.csv"
+
+
 # ######################### ######################### ######################### 
 # # Import data from Workspace 
 # ######################### ######################### ######################### 
@@ -173,10 +178,10 @@ output_dataset <- output$data
 ### list of calculate variables
 vars_label_list <- c("distance", "normalize_distance","surface","normalize_surface","number_of_trajectories")
 ### Intialisation for metadata creation
+# metadata model
+metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
 # metadata identifier to select the right metadata model
 metadata_id <- paste0(object_type,"_",vars_label_list,if(aggregate_data==T){"_aggregation"},"_",label_spatial_zone)
-# metadata model
-metadata_input <- read.csv("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/metadata_input.csv", sep=",", header = T)
 # metadata created throughout treatment
 add_metadata <- output$metadata_list
 # create identifier file name
@@ -198,8 +203,8 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 # # Create CSV file
 # ######################### ######################### ######################### 
 
-if(dir.exists("output")==F){
-  dir.create("output")
+if(dir.exists("output/trajectories_aggregation")==F){
+  dir.create("output/trajectories_aggregation")
 }
 filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")
 filepath_metadata = paste("output/trajectories_aggregation/metadata_",identifier,".csv", sep="")

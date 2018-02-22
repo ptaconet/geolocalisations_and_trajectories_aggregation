@@ -25,6 +25,7 @@
 # wps.in: id = method_asso, type character. title = Method used for data aggregation random method or equal distribution method are available. Value : "random|equaldistribution"
 # wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
 # wps.in: id = program_observe, type = boolean. title = For data from observe database, put TRUE to have the dimension "program" in output data, value : "TRUE|FALSE"
+# wps.in: id = file_path_metadata_model, type = character. title = File path of the metadata model;
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by space and by time; 
 #########################
 
@@ -124,6 +125,8 @@ aggregate_data =T
 ### Put true to have program dimension for observe database
 program_observe=F
 
+file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv"
+
 cat("Initialisation ... ok \n")
 
 
@@ -192,12 +195,16 @@ output_dataset <- output$data
 # ######################### ######################### ######################### 
 # # Metadata
 # ######################### ######################### ######################### 
-
-metadata_input <- read.csv("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv", sep=",", header = T)
-
+### Intialisation for metadata creation
+# metadata model
+metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
+# metadata identifier to select the right metadata model
 metadata_id <- paste(file_name,label_spatial_zone,sep="_")
+# metadata created throughout treatment
 add_metadata <- output$metadata_list
+# add SQL query
 add_metadata$table_sql_query <- parameter_bdd$query
+# create identifier file name
 min_date <- as_date(min(output_dataset$time_start))
 max_date <- as_date(max(output_dataset$time_end))
 start_date <- str_replace_all(min_date,"-","_")
@@ -216,8 +223,8 @@ output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=m
 # # Create CSV file
 # ######################### ######################### ######################### 
 
-if(dir.exists("output")==F){
-  dir.create("output")
+if(dir.exists("output/geolocalisations_aggregation")==F){
+  dir.create("output/geolocalisations_aggregation")
 }
 filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
 filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")
