@@ -59,7 +59,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ### Import data from database
 ## fact selection
-file_name <- "catch_balbaya"
+file_name <- "fad_fads"
 file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
 source(file_path_parameter)
 ## SQL limit (put NULL if no limit)
