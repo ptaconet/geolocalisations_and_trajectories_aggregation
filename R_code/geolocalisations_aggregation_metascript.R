@@ -69,7 +69,7 @@ sql_limit <- 7000
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
 ### spatial resolution
-spatial_grid <- F
+spatial_grid <- T
 ## zone extent : latittude (in degree) range -90:90, longitude (in degree) range -180:180
 latmin <- -90
 latmax <- 90
@@ -91,9 +91,10 @@ if (spatial_grid==T) {
   ymax_plot=lonmax
   ## Get the EEZ from the marineregions webiste
   dsn<-paste("WFS:http://geo.vliz.be/geoserver/MarineRegions/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:eez&maxFeatures=200&BBOX=",xmin_plot,",",ymin_plot,",",xmax_plot,",",ymax_plot,sep="")
-  eez_marineregion_layer<-readOGR(dsn,"MarineRegions:eez")
+  shapefile_name <- "MarineRegions:eez"
+  shapefile<-readOGR(dsn,shapefile_name)
   ## Change the crs of spatial zone for the data crs 
-  spatial_zone=spTransform(eez_marineregion_layer, CRS(data_crs))
+  spatial_zone=spTransform(shapefile, CRS(data_crs))
   ## indicate the label of the spatial zone (see with str(spatial_zone))
   label_id_geom <- "geoname"
   # name of the layer (useful for metadata)
@@ -101,7 +102,7 @@ if (spatial_grid==T) {
   ## Plot 
   # col_eez<-rgb(red=0, green=0, blue=102,alpha=70,maxColorValue=255)
   # map("world", fill=TRUE, col="gray81", bg="white", xlim=c(xmin_plot,xmax_plot),ylim=c(ymin_plot,ymax_plot))
-  # plot(eez_marineregion_layer,col=col_eez,add=TRUE,lwd=0.6,border="bisque4")
+  # plot(shape,col=col_eez,add=TRUE,lwd=0.6,border="bisque4")
   spatial_reso <-NULL
 } 
 
@@ -148,8 +149,8 @@ warning("Please inform the database manager of your database usage. \n This data
 parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
 
 # Add the user and password for database access
-parameter_bdd$user <- "***"
-parameter_bdd$password <- "***"
+parameter_bdd$user <- "invbalbaya"
+parameter_bdd$password <- "iv9balba"
 
 con <- dbConnect(drv, dbname = parameter_bdd$dbname,
                  host = parameter_bdd$host, port = parameter_bdd$port,
@@ -213,7 +214,7 @@ final_date <- str_replace_all(max_date,"-","_")
 spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
 temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
 ### data identifier
-identifier <- paste0("indian_atlantic_oceans_",agg_parameters$fact_name,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg","_")}else{label_spatial_zone},temporal_resolution_id,
+identifier <- paste0("indian_atlantic_oceans_",agg_parameters$fact_name,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg")}else{label_spatial_zone},"_",temporal_resolution_id,
                      add_metadata$temporal_resolution_unit,"_",start_date,"_",final_date,"_",method_asso,"_",agg_parameters$bdd_name, sep="")
 
 
