@@ -149,8 +149,8 @@ warning("Please inform the database manager of your database usage. \n This data
 parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
 
 # Add the user and password for database access
-parameter_bdd$user <- "invbalbaya"
-parameter_bdd$password <- "iv9balba"
+parameter_bdd$user <- "***"
+parameter_bdd$password <- "***"
 
 con <- dbConnect(drv, dbname = parameter_bdd$dbname,
                  host = parameter_bdd$host, port = parameter_bdd$port,
