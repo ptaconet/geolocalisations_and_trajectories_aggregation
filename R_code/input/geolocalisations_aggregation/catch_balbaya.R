@@ -26,9 +26,9 @@ bdd_parameters <- function(firstDate,finalDate,sql_limit){
   #'     bdd_parameters <- bdd_parameters(firstDate="2010-01-12",finalDate="2020-02-31",sql_limit=1000)
 
   ######## connection parameter
-  dbname = "***"
-  host = "***"
-  port = ***
+  dbname = "balbaya"
+  host = "aldabra2"
+  port = 5432
   user = "***" 
   password = "***"
   

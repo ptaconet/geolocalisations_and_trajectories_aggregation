@@ -42,14 +42,13 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
 
 
   ######################## Package
-  require(data.table)
-  require(lubridate)
-  require(data.table)
-  require(dplyr)
-  require(sp)
-  require(rgeos)
-  require(stringr)
-  require(rlang)
+  all_packages <- c("data.table","lubridate","dplyr","sp","rgeos","rgdal","stringr","rlang")
+  for(package in all_packages){
+    if (!require(package,character.only = TRUE)) {
+      install.packages(package)  
+    }
+    require(package,character.only = TRUE)
+  }
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R")
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_grid.R")
   
@@ -265,18 +264,19 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     
     cat("\n Aggregation of data in progress ... ")
     # list of dimensions
-    list_dimension_output_modify <- c("geom_wkt", "time_start", "time_end",list_dimensions_output)
+    list_dimensions_output_modify <- c("geom_wkt", "time_start", "time_end",list_dimensions_output)
 
     #sym :take strings as input and turn them into symbols (library rlang )
-    output_data_agg <- output_data_detail %>% group_by_(.dots=list_dimension_output_modify) %>% summarise(sum=sum(!!sym(var_aggregated_value)), number=n()) %>% setNames( c(list_dimension_output_modify, var_aggregated_value, "number_of_points"))
+    output_data_agg <- output_data_detail %>% group_by_(.dots=list_dimensions_output_modify) %>% summarise(sum=sum(!!sym(var_aggregated_value)), number=n()) %>% setNames( c(list_dimensions_output_modify, var_aggregated_value, "number_of_points"))
     
     output_data <- data.table(output_data_agg) 
-
+    list_dimensions_output_metadata <- list_dimensions_output_modify
     cat("ok")
     
   } else {
     ## store data without aggregation but associate by time and by space
     output_data <- output_data_detail
+    list_dimensions_output_metadata <- list_dimensions_output
   }
   
 
@@ -312,7 +312,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
                     step4: A continius calendar was created from ",min_date," to ",max_date," with a period of ",temporal_resolution," ",temporal_resolution_unit,"(s) . The time start and time end are inclusive.
                     step5: Each fishing data was associated to one polygon using the data geolocalisation.
                     step6:",step_6,"
-                    step7: Data were aggregated according to :",paste0(list_dimension_output_modify, collapse=", "),".
+                    step7: Data were aggregated according to :",paste0(list_dimensions_output_metadata, collapse=", "),".
                     step8: Metadata were created according to the input data and the source database.")
   
   metadata <- list(summary ,date, lineage, spatial_resolution, start_year, final_year, temporal_resolution,temporal_resolution_unit )

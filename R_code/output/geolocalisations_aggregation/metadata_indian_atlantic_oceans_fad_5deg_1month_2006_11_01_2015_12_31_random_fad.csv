@@ -1,0 +1,30 @@
+"identifier","date","keywords","title","summary","supplemental_information","input_data_source","creator_name","creator_email","contact","project","acknowledgement","publisher_name","publisher_url","publisher_email","spatial_resolution","spatial_resolution_unit","crs","lineage","variable","longname","table_sql_query"
+"indian_atlantic_oceans_fad_5deg_1month_2006_11_01_2015_12_31_random_fad"," 2018-02-22 18:54:06","geolocalisation aggregation space time fad ","FADS  in the Atlantic and Indian oceans (2006-2015) for french surface fisheries by 5° square / 1month (logbooks)","This dataset lists FADS (Fishing Aggregating Device) in the Atlantic and Indian oceans for french surface fisheries from 2006 to 2015 aggregated on a 5 degrees and 1 month grid resolution (logbooks). These data come from FADS database and are collected by French National Research Institute for Sustainable Development (IRD). FADS database gathers the fine data from french surface tuna fisheries and partners. This database contains data about FADS location. The location are classified according to RandomForest method and each location is predict at sea or on boat. The processing uses only fishing activities.  The processing attributes each geolocation to an unique polygon. If the location is between several polygons then the polygon is choice randomly.Concerning calendar, time_start and time_end are inclusive. If there are no set in a polygon for a period, this level are not in this dataset.",NA,NA,"DALLEAU.C TACONET.P BARDE.J ","chloe.dalleau@ird.fr julien.barde@ird.fr taha.imzilen@ird.fr paul.taconet@ird.fr","owner=ird@ird.fr processor=chloe.dalleau@ird.fr metadata=chloe.dalleau@ird.fr metadata=julien.barde@ird.fr metadata=paul.taconet@ird.fr metadata=taha.imzilen@ird.fr principalInvestigator=julien.barde@ird.fr publisher=ird@ird.fr","BlueBridge H2020 project",NA,"ird@ird.fr","http://www.ird.fr","ird@ird.fr"," 5","degree","+init=epsg:4326 +proj=longlat +datum=WGS85"," step1: fad data from Ob7 database were collated and harmonized.
+                    step2: Only data included in lon: -100 -45  lat: 115 50 from 2006-11-01 to 2015-12-31 are used. 
+                    step3: A regular grid composed of square polygons was created. The spatial extent is lon: -100 -45  lat: 115 50 with a resolution of 5 decimal degrees.
+                    step4: A continius calendar was created from 2006-11-01 to 2015-12-31 with a period of 1 month(s) . The time start and time end are inclusive.
+                    step5: Each fishing data was associated to one polygon using the data geolocalisation.
+                    step6:The processing attributes each geolocation to an unique polygon. If the location is between several polygons then the polygon is choice randomly.
+                    step7: Data were aggregated according to :fad_class.
+                    step8: Metadata were created according to the input data and the source database.","fad","Fishing Aggergating Device","                    
+
+              SELECT
+              positions_class.buoy_id AS fad_id,
+              positions_class.section_num_flip2 AS section_id,
+              positions_class.clean_pt_id AS pos_id,
+              positions_class.pt_date::date AS date,
+              ST_X(positions_class.pt_geom) AS lon_fad,
+              ST_Y(positions_class.pt_geom) AS lat_fad,
+              positions_class.class_flip2 AS fad_class
+
+              FROM 
+              fads_classified.positions_class		
+              INNER JOIN fads_stats.segments_stats ON 
+              (positions_class.buoy_id = segments_stats.buoy_id AND
+              positions_class.clean_pt_id = segments_stats.start_clean_pt_id)
+              
+              WHERE 
+              model_id=1 AND
+              -- filtrage sur les activités comprisent entre la première et dernière date du calendrier
+              (positions_class.pt_date BETWEEN '1800-01-01'::date AND '2017-12-31'::date)
+              limit 7000"

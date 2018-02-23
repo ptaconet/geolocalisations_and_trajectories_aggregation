@@ -25,6 +25,7 @@
 # wps.in: id = method_asso, type character. title = Method used for data aggregation random method or equal distribution method are available. Value : "random|equaldistribution"
 # wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
 # wps.in: id = program_observe, type = boolean. title = For data from observe database, put TRUE to have the dimension "program" in output data, value : "TRUE|FALSE"
+# wps.in: id = file_path_metadata_model, type = character. title = File path of the metadata model;
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by space and by time; 
 #########################
 
@@ -34,19 +35,15 @@
 
 # clean the global environnement
 rm(list=ls())
-## Set working directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 # Packages
-library("RPostgreSQL")
-library(tictoc)
-library(data.table)
-library(dplyr)
-library(sp)
-library(rgeos)
-library(rgdal)
-library(lubridate)
-library(stringr)
-library(rlang)
+all_packages <- c("rstudioapi","RPostgreSQL","tictoc","data.table","dplyr","sp","rgeos","rgdal","lubridate","stringr","rlang")
+for(package in all_packages){
+  if (!require(package,character.only = TRUE)) {
+    install.packages(package)  
+  }
+  require(package,character.only = TRUE)
+}
 # function
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/geolocalisations_aggregation.R")
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/metadata_generate.R")
@@ -54,17 +51,19 @@ source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajecto
 tic.clear()
 tic()
 
+## Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################### ######################### ######################### 
 # Initialisation
 ######################### ######################### ######################### 
 
 ### Import data from database
 ## fact selection
-file_name <- "catch_balbaya"
-file_path_parameter <- paste0("input/geolocalisations_aggregation/",file_name,".R")
+file_name <- "fad_fads"
+file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
 source(file_path_parameter)
 ## SQL limit (put NULL if no limit)
-sql_limit <- 1000
+sql_limit <- 7000
 
 # CRS of sptial data
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
@@ -79,7 +78,7 @@ lonmax <- 180
 if (spatial_grid==T) {
   ### Definition of spatial grid, squares compound
   ## data spatial resoltion in degree
-  spatial_reso <- 1
+  spatial_reso <- 5
   spatial_zone=NULL
   label_id_geom = NULL
   label_spatial_zone = "grid"
@@ -126,6 +125,8 @@ aggregate_data =T
 ### Put true to have program dimension for observe database
 program_observe=F
 
+file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv"
+
 cat("Initialisation ... ok \n")
 
 
@@ -144,6 +145,10 @@ drv <- dbDriver("PostgreSQL")
 drv <- dbDriver("PostgreSQL")
 warning("Please inform the database manager of your database usage. \n This data are confidential. For diffusion please check with the database manager.")
 parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
+
+# Add the user and password for database access
+parameter_bdd$user <- "***"
+parameter_bdd$password <- "***"
 
 con <- dbConnect(drv, dbname = parameter_bdd$dbname,
                  host = parameter_bdd$host, port = parameter_bdd$port,
@@ -190,12 +195,16 @@ output_dataset <- output$data
 # ######################### ######################### ######################### 
 # # Metadata
 # ######################### ######################### ######################### 
-
-metadata_input <- read.csv("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv", sep=",", header = T)
-
+### Intialisation for metadata creation
+# metadata model
+metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
+# metadata identifier to select the right metadata model
 metadata_id <- paste(file_name,label_spatial_zone,sep="_")
+# metadata created throughout treatment
 add_metadata <- output$metadata_list
+# add SQL query
 add_metadata$table_sql_query <- parameter_bdd$query
+# create identifier file name
 min_date <- as_date(min(output_dataset$time_start))
 max_date <- as_date(max(output_dataset$time_end))
 start_date <- str_replace_all(min_date,"-","_")
@@ -214,8 +223,8 @@ output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=m
 # # Create CSV file
 # ######################### ######################### ######################### 
 
-if(dir.exists("output")==F){
-  dir.create("output")
+if(dir.exists("output/geolocalisations_aggregation")==F){
+  dir.create("output/geolocalisations_aggregation")
 }
 filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
 filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")

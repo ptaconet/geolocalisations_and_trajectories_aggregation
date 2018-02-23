@@ -41,14 +41,15 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   #' @usage output <- trajectories_aggregation(dataset,buffer_size,spatial_reso,latmin,latmax,lonmin,lonmax,firstdate=firstDate,finaldate=finalDate,temporal_reso,temporal_reso_unit,aggregate_data, list_dim_output=list_dim_output,spatial_zone=spatial_zone ,label_id_geom=label_id_geom)
   
 
-  ######################## Package
-  require(data.table)
-  require(sp)
-  require(lubridate)
-  require(rgeos)
-  require(dplyr)
-  require(stringr)
-  require(raster)
+  ######################## Packages
+  all_packages <- c("data.table","sp","lubridate","rgeos","dplyr","rgdal","stringr","raster")
+  for(package in all_packages){
+    if (!require(package,character.only = TRUE)) {
+      install.packages(package)  
+    }
+    require(package,character.only = TRUE)
+  }
+
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_calendar.R")
   source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/create_grid.R")
   

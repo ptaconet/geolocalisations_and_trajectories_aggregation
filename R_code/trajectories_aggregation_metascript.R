@@ -8,7 +8,7 @@
 # wps.in: id = csv_input_name, type = character, title = Name of input data (with extension, like : "boat_2017.csv") ;
 # wps.in: id = file_path_input_data, type = character, title = File path of the input data;
 # wps.in: id = public_link_input_data, type = character, title = Public link to access the input data;
-# wps.in: id = object_type, type = character, title = Object type (like : "VMS", "AIS", "FAD");
+# wps.in: id = object_type, type = character, title = Object type (like : "vms", "ais", "fad");
 # wps.in: id = colname_idobject, type = character, title = Column name in the input data for object identifier;
 # wps.in: id = colname_idtraj, type = character, title = Column name in the input data for trajectories identifier;
 # wps.in: id = colname_time, type = character, title = Column name in the input data for date time;
@@ -31,49 +31,51 @@
 # wps.in: id = final_date , type = date, title = Final date of calendar, value = "2100-01-01";
 # wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
 # wps.in: id = list_dim_output, type = boolean. title = List of dmensions from input data and for output data (like : c("flag","gear"), NULL, ...), value : "TRUE|FALSE"
+# wps.in: id = file_path_metadata_model, type = character. title = File path of the metadata model;
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by dimensions, by space and by time; 
 #########################
 
-######################### Set working directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-######################## Package
-require(data.table)
-library(dplyr)
-library(lubridate)
-library(raster)
-library(rgeos)
-library(sp)
-library(stringr)
-library(tictoc)
+######################## Packages
+all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang")
+for(package in all_packages){
+  if (!require(package,character.only = TRUE)) {
+    install.packages(package)  
+  }
+  require(package,character.only = TRUE)
+}
 source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/functions/trajectories_aggregation.R")
 source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories_aggregation/master/R_code/functions/metadata_generate.R")
-library(rlang)
+
 
 
 # timer : 
 tic.clear()
 tic()
+
+######################### Set working directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 ######################## Input data 
 
 ## name of the csv input, this file has to be a folder named "input" (with extension)
-csv_input_name <- "fad_2016.csv"
-file_path_input_data <- paste0("input/",csv_input_name)
+csv_input_name <- "extract_fad.csv"
+file_path_input_data <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/",csv_input_name)
 public_link_input_data <- NA
 institute_source <- "IRD"
-## file caracteristics
-object_type <- "FAD"
-colname_idobject="id"
-colname_idtraj= "id_traj"
-colname_time= "Datetime"
+## file caracteristics (object_type in lower case)
+object_type <- "fad" 
+colname_idobject="fad_id"
+colname_idtraj= "section"
+colname_time= "time"
 colname_lat= "lat"
 colname_lon = "lon"
 
 ## buffer size from the object in km
-buffer_size <- 37 # km
+buffer_size <- 10 # km
 ## time extent , tz = "UTC"
-first_date <-"2016-01-01"
-final_date <- "2016-12-31"
+first_date <-"2000-01-01"
+final_date <- "2017-12-31"
 # for mi-month put temporal_reso = 1/2 and temporal_reso_unit "month"
 ## temporal resolution and unit
 temporal_reso <- 1
@@ -84,7 +86,7 @@ data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 aggregate_data = T
 if (aggregate_data == T){
   # dimension list from input data and which will appear in the outputdata
-  list_dim_output <- c("flag", "gear")
+  list_dim_output <- c("fad_class")
   # list_dim_output <- NULL
   
 }
@@ -125,6 +127,10 @@ if (spatial_grid==T) {
   spatial_reso <-NULL
 } 
 
+# metadata model
+file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/metadata_input.csv"
+
+
 # ######################### ######################### ######################### 
 # # Import data from Workspace 
 # ######################### ######################### ######################### 
@@ -141,7 +147,7 @@ if (spatial_grid==T) {
 # # file_path_source <- paste0(dataWS,"/",name)
 
 # downloadFileWS(paste(dataWS,paste0("/",file_path_input_data),sep=""))
-dataset_sql <- read.csv(file_path_input_data, sep=";", header = T)
+input_dataset <- read.csv(file_path_input_data, sep=",", header = T)
 
 
 
@@ -150,11 +156,10 @@ dataset_sql <- read.csv(file_path_input_data, sep=";", header = T)
 # # Treatment
 # ######################### ######################### ######################### 
 ### Pre-processing to select column in the input data and change the name of few column ("id_object", "id_traj", "time", "lat", "lon")
-dataset <- preprocessing_data_trajectories(dataset=dataset_sql,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
-rm(dataset_sql)
+dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
+rm(input_dataset)
 
 ### test
-# dataset <- subset(dataset, dataset$id_object!=1)
 # dataset <- dataset[1:4000,]
 
 ### treatment
@@ -173,10 +178,10 @@ output_dataset <- output$data
 ### list of calculate variables
 vars_label_list <- c("distance", "normalize_distance","surface","normalize_surface","number_of_trajectories")
 ### Intialisation for metadata creation
+# metadata model
+metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
 # metadata identifier to select the right metadata model
 metadata_id <- paste0(object_type,"_",vars_label_list,if(aggregate_data==T){"_aggregation"},"_",label_spatial_zone)
-# metadata model
-metadata_input <- read.csv("input/metadata_input.csv", sep=",", header = T)
 # metadata created throughout treatment
 add_metadata <- output$metadata_list
 # create identifier file name
@@ -198,45 +203,15 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 # # Create CSV file
 # ######################### ######################### ######################### 
 
-if(dir.exists("output")==F){
-  dir.create("output")
+if(dir.exists("output/trajectories_aggregation")==F){
+  dir.create("output/trajectories_aggregation")
 }
-filepath_dataset = paste("output/",identifier,".csv", sep="")
-filepath_metadata = paste("output/metadata_",identifier,".csv", sep="")
+filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")
+filepath_metadata = paste("output/trajectories_aggregation/metadata_",identifier,".csv", sep="")
 
 write.csv(output_dataset, file = filepath_dataset, row.names = FALSE)
 write.csv(output_metadata, file = filepath_metadata, row.names = FALSE)
 
-
-## plot
-# boundary word
-# download.file("http://thematicmapping.org/downloads/TM_WORLD_BORDERS_SIMPL-0.3.zip" , destfile="world_shape_file.zip")
-# system("unzip world_shape_file.zip")
-# library(rgdal)
-# my_spdf=readOGR( dsn= getwd() , layer="TM_WORLD_BORDERS_SIMPL-0.3")
-# # my data
-# my_period <- output_data$data$time_start[1]
-# Mydata <- subset(output_data$data, output_data$data$time_start==my_period)
-# if (spatial_grid==F){
-#   Mydata <- merge(Mydata, spatial_zone@data, by.x="geographic_identifier_label", by.y="geoname")
-# }
-# # Mydata <- output_data
-# sf_poly <- st_as_sf(Mydata, wkt="geom_wkt" )
-# sp_poly <- as(sf_poly, "Spatial")
-# proj4string(sp_poly)=CRS(data_crs)
-# bbox <- gEnvelope(sp_poly)
-# bbox_extent <- bbox@bbox
-# library(RColorBrewer)
-# my_colors = brewer.pal(9, "Reds")
-# my_colors = colorRampPalette(my_colors)(30)
-# 
-# # my_var <- "distance"
-# for (my_var in vars){
-#   title <- paste0(my_var," for the period ", my_period )
-#   print(spplot(sp_poly, my_var, col.regions=my_colors, ylim = c((bbox_extent["y","min"]-10),(bbox_extent["y","max"]+10)),
-#          xlim = c((bbox_extent["x","min"]-10),(bbox_extent["x","max"]+10)) , sp.layout=list(my_spdf, col="darkgrey"), main= title
-#   ))
-# }
 
 
 toc()

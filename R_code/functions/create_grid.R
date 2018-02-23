@@ -28,6 +28,9 @@ create_grid <- function(latmin,latmax,lonmin,lonmax,spatial_reso,crs,centred=T){
   #'  grid <- create_grid(latmin=-90,latmax=90,lonmin=-180,lonmax=80,spatial_reso=1,centred=T)
   
   ### Package 
+  if(!require(sp)){
+    install.packages(sp)
+  }
   require(sp)
   
   ### Creates polygons grid
