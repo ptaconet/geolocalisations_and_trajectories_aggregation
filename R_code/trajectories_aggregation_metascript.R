@@ -37,7 +37,7 @@
 
 
 ######################## Packages
-all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang")
+all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang", "SDLfilter")
 for(package in all_packages){
   if (!require(package,character.only = TRUE)) {
     install.packages(package)  
@@ -64,12 +64,22 @@ file_path_input_data <- paste0("https://raw.githubusercontent.com/cdalleau/geolo
 public_link_input_data <- NA
 institute_source <- "IRD"
 ## file caracteristics (object_type in lower case)
-object_type <- "fad" 
-colname_idobject="fad_id"
-colname_idtraj= "section"
+object_type <- "vms" 
+colname_idobject="id_object"
+colname_idtraj= "id_traj"
 colname_time= "time"
 colname_lat= "lat"
 colname_lon = "lon"
+# To use the fonction trajectories_aggregation, used SDLfilter as preprocessing is recommanded for boats
+apply_SDLfilter = T 
+if (apply_SDLfilter==T){
+  SDLfilter_stepdist = 0.005
+  SDLfilter_steptime = 0
+  SDLfilter_conditional = F
+  SDLfilter_vmax = 38
+  SDLfilter_maxvlp = 38
+  SDLfilter_qi = 4
+}
 
 ## buffer size from the object in km
 buffer_size <- 10 # km
@@ -86,7 +96,7 @@ data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 aggregate_data = T
 if (aggregate_data == T){
   # dimension list from input data and which will appear in the outputdata
-  list_dim_output <- c("fad_class")
+  list_dim_output <- c("flag", "gear")
   # list_dim_output <- NULL
   
 }
@@ -156,7 +166,14 @@ input_dataset <- read.csv(file_path_input_data, sep=",", header = T)
 # # Treatment
 # ######################### ######################### ######################### 
 ### Pre-processing to select column in the input data and change the name of few column ("id_object", "id_traj", "time", "lat", "lon")
-dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
+
+
+dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject,
+                                           colname_idtraj, colname_time,colname_lat,colname_lon,
+                                           apply_SDLfilter,SDLfilter_steptime=SDLfilter_steptime,
+                                           SDLfilter_stepdist=SDLfilter_stepdist,SDLfilter_conditional=SDLfilter_conditional,
+                                           SDLfilter_vmax=SDLfilter_vmax,SDLfilter_maxvlp=SDLfilter_maxvlp)
+
 rm(input_dataset)
 
 ### test
