@@ -64,14 +64,14 @@ file_path_input_data <- paste0("https://raw.githubusercontent.com/cdalleau/geolo
 public_link_input_data <- NA
 institute_source <- "IRD"
 ## file caracteristics (object_type in lower case)
-object_type <- "vms" 
-colname_idobject="id_object"
-colname_idtraj= "id_traj"
+object_type <- "fad" 
+colname_idobject="fad_id"
+colname_idtraj= "section"
 colname_time= "time"
 colname_lat= "lat"
 colname_lon = "lon"
 # To use the fonction trajectories_aggregation, used SDLfilter as preprocessing is recommanded for boats
-apply_SDLfilter = T 
+apply_SDLfilter = F
 if (apply_SDLfilter==T){
   SDLfilter_stepdist = 0.005
   SDLfilter_steptime = 0
@@ -79,6 +79,13 @@ if (apply_SDLfilter==T){
   SDLfilter_vmax = 38
   SDLfilter_maxvlp = 38
   SDLfilter_qi = 4
+} else {
+  SDLfilter_stepdist = NULL
+  SDLfilter_steptime = NULL
+  SDLfilter_conditional = NULL
+  SDLfilter_vmax = NULL
+  SDLfilter_maxvlp = NULL
+  SDLfilter_qi = NULL
 }
 
 ## buffer size from the object in km
@@ -96,7 +103,7 @@ data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 aggregate_data = T
 if (aggregate_data == T){
   # dimension list from input data and which will appear in the outputdata
-  list_dim_output <- c("flag", "gear")
+  list_dim_output <- c("fad_class")
   # list_dim_output <- NULL
   
 }
