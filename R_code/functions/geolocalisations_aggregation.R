@@ -105,7 +105,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     ### spatial zone add by the user
     ## class : sp, spatialPolygonsDataframe with the label of zones
     sp_zone <- spatial_zone
-    sp_zone <- spTransform(sp_zone , CRS(data_crs) )
+    # sp_zone <- spTransform(sp_zone , CRS(data_crs) )
   }
   
   cat(" ok ")
@@ -119,7 +119,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   
   output_data_detail <- NULL
   compteur=0
-  
+  id_bat=26 # 26  68  80 120 286 427
   for (id_bat in unique_id){
     
     dataset <- subset(dataset_calendar,dataset_calendar[[object_identifier]]==id_bat)
@@ -182,8 +182,11 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         ### Extract the duplicated geolocalisation (points on polygon boundary)
         table_number_rep <- table(as.factor(output_data_detail_id_with_duplicated$id_point))
         ## Extract id
-        id_duplicated <- as.numeric(which(table_number_rep>1))
-        id_unique <- as.numeric(which(table_number_rep==1))
+        # id_duplicated <- as.numeric(which(table_number_rep>1))
+        id_duplicated <- names(which(table_number_rep>1))
+        # id_unique <- as.numeric(which(table_number_rep==1))
+        id_unique <- names(which(table_number_rep==1))
+        
         ## Extract data
         duplicated_data <- output_data_detail_id_with_duplicated[which(output_data_detail_id_with_duplicated$id_point %in% id_duplicated),]
         output_data_detail_id <- output_data_detail_id_with_duplicated[which(output_data_detail_id_with_duplicated$id_point %in% id_unique),]
@@ -229,7 +232,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         }
         
         compteur = compteur +1
-        cat(paste0("\n             ", compteur, " object(s) on ", length(unique_id), " treated."))
+        cat(paste0("\n             ", compteur, " object(s) treated."))
         
         ### bbox
         if (compteur>1){
@@ -246,7 +249,11 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   
   ## Select the wanted dimenions
   list_remove_dim <- c(if(method_asso=="cwp"){c("dist_0_centr_poly","lon_cent_geom","lat_cent_geom")},c("id_point","id_geom"))
-  output_data_detail <- output_data_detail[,-list_remove_dim, with=F]
+  if (dim(output_data_detail)[1]<1){
+    warnings("The intersection between data and sptial zone is empty")
+  } else {
+    output_data_detail <- output_data_detail[,-list_remove_dim, with=F]
+  }
   
   ## Special case for facts effort and FAD
   if (fact_name=="effort"){
