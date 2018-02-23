@@ -59,7 +59,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ### Import data from database
 ## fact selection
-file_name <- "fad_fads"
+file_name <- "catch_balbaya"
 file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
 source(file_path_parameter)
 ## SQL limit (put NULL if no limit)
@@ -69,7 +69,7 @@ sql_limit <- 7000
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
 ### spatial resolution
-spatial_grid <- T
+spatial_grid <- F
 ## zone extent : latittude (in degree) range -90:90, longitude (in degree) range -180:180
 latmin <- -90
 latmax <- 90
@@ -94,8 +94,9 @@ if (spatial_grid==T) {
   eez_marineregion_layer<-readOGR(dsn,"MarineRegions:eez")
   ## Change the crs of spatial zone for the data crs 
   spatial_zone=spTransform(eez_marineregion_layer, CRS(data_crs))
-  ## indicate the label of the spatial zone
+  ## indicate the label of the spatial zone (see with str(spatial_zone))
   label_id_geom <- "geoname"
+  # name of the layer (useful for metadata)
   label_spatial_zone <- "EEZ"
   ## Plot 
   # col_eez<-rgb(red=0, green=0, blue=102,alpha=70,maxColorValue=255)

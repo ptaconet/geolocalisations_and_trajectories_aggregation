@@ -289,14 +289,18 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   max_date <- as_date(max(output_data$time_end))
   start_year <- year(min_date)
   final_year <- year(max_date)
+  if(!(is.null(spatial_reso))){
   spatial_resolution <-  round(spatial_reso,digits = 2)
+  } else {
+    spatial_resolution <- ""
+  }
   temporal_resolution <- temporal_reso
   temporal_resolution_unit <- temporal_reso_unit
 
   if (spatial_grid==T){
     step_3 <- paste0("step3: A regular grid composed of square polygons was created. The spatial extent is ",bbox_extent," with a resolution of ", spatial_resolution," decimal degrees.")
   } else {
-    step_3 <- past0("step3: Spatial data are extract from a input shapefile.")
+    step_3 <- paste0("step3: Spatial data are extract from a input shapefile.")
   }
   
   switch(method_asso,
