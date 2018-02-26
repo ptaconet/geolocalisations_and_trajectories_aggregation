@@ -37,7 +37,7 @@
 
 
 ######################## Packages
-all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang", "SDLfilter")
+all_packages <- c("rstudioapi","data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang", "SDLfilter")
 for(package in all_packages){
   if (!require(package,character.only = TRUE)) {
     install.packages(package)  
