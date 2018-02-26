@@ -378,7 +378,7 @@ preprocessing_data_trajectories <- function(dataset,list_dim_output,colname_idob
     if (!("qi" %in% colnames(dataset))){
       dataset$qi <- SDLfilter_qi
     }
-    dataset <- dupfilter(dataset, step.time = SDLfilter_steptime, step.dist = SDLfilter_step_dist, conditional = SDLfilter_conditional)
+    dataset <- dupfilter(dataset, step.time = SDLfilter_steptime, step.dist = SDLfilter_stepdist, conditional = SDLfilter_conditional)
     dataset <- ddfilter(dataset, vmax=SDLfilter_vmax, maxvlp=SDLfilter_maxvlp)
     
     colnames(dataset)[ colnames(dataset)=="DateTime"] <- colname_time
