@@ -51,7 +51,7 @@ source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajecto
 tic.clear()
 tic()
 
-## Set working directory
+## Set working directory of current file
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################### ######################### ######################### 
 # Initialisation
