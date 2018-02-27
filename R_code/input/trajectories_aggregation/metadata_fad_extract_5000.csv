@@ -3,7 +3,7 @@ fad_extract_5000,27/02/18,fad,FAD geolocalisation data (limit 5000 rows),These d
               positions_class.buoy_id AS fad_id,
               positions_class.section_num_flip2 AS section_id,
               positions_class.clean_pt_id AS pos_id,
-              positions_class.pt_date::date AS date,
+              positions_class.pt_date::timestamp AS date,
               ST_X(positions_class.pt_geom) AS lon_fad,
               ST_Y(positions_class.pt_geom) AS lat_fad,
               positions_class.class_flip2 AS fad_class
@@ -15,7 +15,5 @@ fad_extract_5000,27/02/18,fad,FAD geolocalisation data (limit 5000 rows),These d
               positions_class.clean_pt_id = segments_stats.start_clean_pt_id)
               
               WHERE 
-              model_id=1 AND
-              -- filtrage sur les activités comprisent entre la première et dernière date du calendrier
-              (positions_class.pt_date BETWEEN '1800-01-01'::date AND '2017-12-31'::date)
+              model_id=1 
               Limit 5000"
