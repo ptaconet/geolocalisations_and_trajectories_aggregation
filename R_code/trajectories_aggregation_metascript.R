@@ -70,23 +70,6 @@ colname_idtraj= "section"
 colname_time= "time"
 colname_lat= "lat"
 colname_lon = "lon"
-# To use the fonction trajectories_aggregation, used SDLfilter as preprocessing is recommanded for boats
-apply_SDLfilter = F
-if (apply_SDLfilter==T){
-  SDLfilter_stepdist = 0.005
-  SDLfilter_steptime = 0
-  SDLfilter_conditional = F
-  SDLfilter_vmax = 38
-  SDLfilter_maxvlp = 38
-  SDLfilter_qi = 4
-} else {
-  SDLfilter_stepdist = NULL
-  SDLfilter_steptime = NULL
-  SDLfilter_conditional = NULL
-  SDLfilter_vmax = NULL
-  SDLfilter_maxvlp = NULL
-  SDLfilter_qi = NULL
-}
 
 ## buffer size from the object in km
 buffer_size <- 10 # km
@@ -172,14 +155,12 @@ input_dataset <- read.csv(file_path_input_data, sep=",", header = T)
 # ######################### ######################### ######################### 
 # # Treatment
 # ######################### ######################### ######################### 
-### Pre-processing to select column in the input data and change the name of few column ("id_object", "id_traj", "time", "lat", "lon")
+### Pre-processing to select column in the input data and change the name of few column 
+### for trajectories_aggregation function ("id_object", "id_traj", "time", "lat", "lon")
 
 
 dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject,
-                                           colname_idtraj, colname_time,colname_lat,colname_lon,
-                                           apply_SDLfilter,SDLfilter_steptime=SDLfilter_steptime,
-                                           SDLfilter_stepdist=SDLfilter_stepdist,SDLfilter_conditional=SDLfilter_conditional,
-                                           SDLfilter_vmax=SDLfilter_vmax,SDLfilter_maxvlp=SDLfilter_maxvlp)
+                                           colname_idtraj, colname_time,colname_lat,colname_lon)
 
 rm(input_dataset)
 
