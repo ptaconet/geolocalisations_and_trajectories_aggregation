@@ -37,7 +37,7 @@
 
 
 ######################## Packages
-all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang")
+all_packages <- c("rstudioapi","data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang", "SDLfilter")
 for(package in all_packages){
   if (!require(package,character.only = TRUE)) {
     install.packages(package)  
@@ -53,7 +53,7 @@ source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories
 tic.clear()
 tic()
 
-######################### Set working directory
+######################### Set working directory of current file
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ######################## Input data 
@@ -155,8 +155,13 @@ input_dataset <- read.csv(file_path_input_data, sep=",", header = T)
 # ######################### ######################### ######################### 
 # # Treatment
 # ######################### ######################### ######################### 
-### Pre-processing to select column in the input data and change the name of few column ("id_object", "id_traj", "time", "lat", "lon")
-dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
+### Pre-processing to select column in the input data and change the name of few column 
+### for trajectories_aggregation function ("id_object", "id_traj", "time", "lat", "lon")
+
+
+dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject,
+                                           colname_idtraj, colname_time,colname_lat,colname_lon)
+
 rm(input_dataset)
 
 ### test
@@ -204,6 +209,7 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 # ######################### ######################### ######################### 
 
 if(dir.exists("output/trajectories_aggregation")==F){
+  dir.create("output")
   dir.create("output/trajectories_aggregation")
 }
 filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")
