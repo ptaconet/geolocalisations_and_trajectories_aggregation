@@ -53,7 +53,7 @@ source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories
 tic.clear()
 tic()
 
-######################### Set working directory
+######################### Set working directory of current file
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ######################## Input data 
