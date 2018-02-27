@@ -226,6 +226,7 @@ output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=m
 # ######################### ######################### ######################### 
 
 if(dir.exists("output/geolocalisations_aggregation")==F){
+  dir.create("output")
   dir.create("output/geolocalisations_aggregation")
 }
 filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
