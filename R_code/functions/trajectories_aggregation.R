@@ -348,7 +348,7 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
 } 
 
 
-preprocessing_data_trajectories <- function(dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon,apply_SDLfilter=F,SDLfilter_steptime=NULL,SDLfilter_stepdist=NULL,SDLfilter_conditional=FALSE,SDLfilter_vmax=NULL,SDLfilter_maxvlp=NULL){
+preprocessing_data_trajectories <- function(dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon){
 
   #' @name preprocessing_data_trajectories
   #' @title Format input data for the function trajectories_aggregation
@@ -369,20 +369,6 @@ preprocessing_data_trajectories <- function(dataset,list_dim_output,colname_idob
   #'
   #' @usage dataset <- preprocessing_data_trajectories(dataset=dataset_sql,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
 
-  ### Apply SDLfilter
-  list_dim_for_id <- c(list_dim_output,colname_idobject,colname_idtraj)
-  if (apply_SDLfilter==T){
-    dataset[,colname_time] <- as_datetime(dataset[,colname_time])
-    colnames(dataset)[ colnames(dataset)==colname_time] <- "DateTime"
-    dataset$id <- apply(dataset[,list_dim_for_id],1,paste,collapse="_")
-    if (!("qi" %in% colnames(dataset))){
-      dataset$qi <- SDLfilter_qi
-    }
-    dataset <- dupfilter(dataset, step.time = SDLfilter_steptime, step.dist = SDLfilter_stepdist, conditional = SDLfilter_conditional)
-    dataset <- ddfilter(dataset, vmax=SDLfilter_vmax, maxvlp=SDLfilter_maxvlp)
-    
-    colnames(dataset)[ colnames(dataset)=="DateTime"] <- colname_time
-  }
 
   ### modify the dataset column name 
   colnames(dataset)[colnames(dataset)==colname_time] <- "time"
