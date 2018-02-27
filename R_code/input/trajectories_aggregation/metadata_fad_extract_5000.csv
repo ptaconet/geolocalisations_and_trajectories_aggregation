@@ -1,0 +1,21 @@
+identifier,date,keywords,title,summary,creator_name,creator_email,contact,publisher_name,publisher_url,lineage,variable,longname,sql_query
+fad_extract_5000,27/02/18,fad,FAD geolocalisation data (limit 5000 rows),These data was extracted from fads_20160813 database (aldabra2 (IRD ob7) – fads_20160813 – fads_classified),Chloe Dalleau,chloe.dalleau@ird.fr,owner=ird@ird.fr processor=chloe.dalleau@ird.fr metadata=chloe.dalleau@ird.fr  principalInvestigator=julien.barde@ird.fr publisher=ird@ird.fr,IRD,ird.fr,step1 :  extraction of data from fads_20160813 database (5000 rows),fad,fad geoocalisation,"           SELECT
+              positions_class.buoy_id AS fad_id,
+              positions_class.section_num_flip2 AS section_id,
+              positions_class.clean_pt_id AS pos_id,
+              positions_class.pt_date::date AS date,
+              ST_X(positions_class.pt_geom) AS lon_fad,
+              ST_Y(positions_class.pt_geom) AS lat_fad,
+              positions_class.class_flip2 AS fad_class
+
+              FROM 
+              fads_classified.positions_class		
+              INNER JOIN fads_stats.segments_stats ON 
+              (positions_class.buoy_id = segments_stats.buoy_id AND
+              positions_class.clean_pt_id = segments_stats.start_clean_pt_id)
+              
+              WHERE 
+              model_id=1 AND
+              -- filtrage sur les activités comprisent entre la première et dernière date du calendrier
+              (positions_class.pt_date BETWEEN '1800-01-01'::date AND '2017-12-31'::date)
+              Limit 5000"
