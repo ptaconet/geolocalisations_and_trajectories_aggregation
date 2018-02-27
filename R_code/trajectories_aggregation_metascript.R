@@ -59,17 +59,17 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################## Input data 
 
 ## name of the csv input, this file has to be a folder named "input" (with extension)
-csv_input_name <- "extract_fad.csv"
+csv_input_name <- "fad_extract_5000.csv"
 file_path_input_data <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/",csv_input_name)
 public_link_input_data <- NA
 institute_source <- "IRD"
 ## file caracteristics (object_type in lower case)
 object_type <- "fad" 
 colname_idobject="fad_id"
-colname_idtraj= "section"
-colname_time= "time"
-colname_lat= "lat"
-colname_lon = "lon"
+colname_idtraj= "section_id"
+colname_time= "date"
+colname_lat= "lat_fad"
+colname_lon = "lon_fad"
 
 ## buffer size from the object in km
 buffer_size <- 10 # km
