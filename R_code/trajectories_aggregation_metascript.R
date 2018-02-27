@@ -209,6 +209,7 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 # ######################### ######################### ######################### 
 
 if(dir.exists("output/trajectories_aggregation")==F){
+  dir.create("output")
   dir.create("output/trajectories_aggregation")
 }
 filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")
