@@ -28,7 +28,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   #' @param program_observe Put TRUE if you want the dimension program (observe database) in the output, type = boolean;
   #' @param aggregate_data Put TRUE if you want aggregated data in the output, type = boolean;
   #' @param method_asso Method used for data aggregation random method (if a fishing data is on several polygons (borders case) the polygon is chosen randomly), equal distribution method (if a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons) or cwp method (The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)) are available. Value : "random|equaldistribution|cwp", type = character;
-  #' @param aggregation_parameters if aggregate_data is TRUE list of "list_dimensions_output": the list of dimensions from input data.frame and for the output data, "var_aggregated_value": colname used in the input dataframe for the variable which will be aggregate, "object_identifier": colname used in the input dataframe for the vessel or FAD identifier, "fact_name": name of the fact (value: "catch", "catch_at_size", "effort", "fad"), "calculation_of_number_days" boolean to indicate if the number of day (by dimensions, space and time) is calculated (only for FAD), type=list
+  #' @param aggregation_parameters if aggregate_data is TRUE list of "list_dimensions_output": the list of dimensions from input data.frame and for the output data, "var_aggregated_value": colname used in the input dataframe for the variable which will be aggregate, "sub_datasaet": colname used in the input dataframe for subset the input data (the function can create error memory if the input data are too large) if no corresponding column put NA , "fact_name": name of the fact (value: "catch", "catch_at_size", "effort", "fad"), "calculation_of_number_days" boolean to indicate if the number of day (by dimensions, space and time) is calculated (only for FAD), type=list
   #' @param spatial_zone shapefile of your spatial zone with the same CRS of data if you use a irregular spatial zone (like : EEZ), type = SpatialPolygonDataframe;
   #' @param label_id_geom label use for spatial geometry in your shapefile if you use a irregular spatial zone (like : EEZ), type = character;
   #'
@@ -64,7 +64,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   ### aggragation parameters
   list_dimensions_output = agg_parameters$list_dimensions_output
   var_aggregated_value = agg_parameters$var_aggregated_value
-  object_identifier = agg_parameters$object_identifier
+  sub_dataset = agg_parameters$sub_dataset
   fact_name = agg_parameters$fact_name
   if (fact_name =="fad"){number_days = agg_parameters$calculation_of_number_days}
   
@@ -116,14 +116,18 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   # Error in RGEOSBinPredFunc(spgeom1, spgeom2, byid, func) :
   # rgeos_binpredfunc_prepared: maximum returned dense matrix size exceeded
   # separate data in some parts
-  unique_id = unique(dataset_calendar[[object_identifier]])
+  if (!is.na(sub_dataset)){
+    unique_id = unique(dataset_calendar[[sub_dataset]])
+  }
   
   output_data_detail <- NULL
   compteur=0
   
-  for (id_bat in unique_id){
+  for (id_subdata in unique_id){
     
-    dataset <- subset(dataset_calendar,dataset_calendar[[object_identifier]]==id_bat)
+    if (!is.na(sub_dataset)){
+      dataset <- subset(dataset_calendar,dataset_calendar[[sub_dataset]]==id_subdata)
+    }
     
     ######################## Create spatial point
     sp_points <- SpatialPointsDataFrame(dataset[,c("lon","lat")], dataset,proj4string = CRS(data_crs))
