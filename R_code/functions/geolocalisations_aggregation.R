@@ -9,7 +9,7 @@
 # 3. number_fad_and_days : calculate and aggregate the number of FAD and days by dimensions, by space and by time
 
 
-geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
+geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,method_asso="equaldistribution",aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
   
   #' @name geolocation_aggregation
   #' @title Geolocation aggregation by dimensions, by space and by time
@@ -27,6 +27,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   #' @param temporal_reso_unit temportal resolution unit od calendar, accepted value : "day" "month" "year", type = character;
   #' @param program_observe Put TRUE if you want the dimension program (observe database) in the output, type = boolean;
   #' @param aggregate_data Put TRUE if you want aggregated data in the output, type = boolean;
+  #' @param method_asso Method used for data aggregation random method (if a fishing data is on several polygons (borders case) the polygon is chosen randomly), equal distribution method (if a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons) or cwp method (The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)) are available. Value : "random|equaldistribution|cwp", type = character;
   #' @param aggregation_parameters if aggregate_data is TRUE list of "list_dimensions_output": the list of dimensions from input data.frame and for the output data, "var_aggregated_value": colname used in the input dataframe for the variable which will be aggregate, "object_identifier": colname used in the input dataframe for the vessel or FAD identifier, "fact_name": name of the fact (value: "catch", "catch_at_size", "effort", "fad"), "calculation_of_number_days" boolean to indicate if the number of day (by dimensions, space and time) is calculated (only for FAD), type=list
   #' @param spatial_zone shapefile of your spatial zone with the same CRS of data if you use a irregular spatial zone (like : EEZ), type = SpatialPolygonDataframe;
   #' @param label_id_geom label use for spatial geometry in your shapefile if you use a irregular spatial zone (like : EEZ), type = character;
@@ -119,7 +120,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   
   output_data_detail <- NULL
   compteur=0
-  id_bat=26 # 26  68  80 120 286 427
+  
   for (id_bat in unique_id){
     
     dataset <- subset(dataset_calendar,dataset_calendar[[object_identifier]]==id_bat)
