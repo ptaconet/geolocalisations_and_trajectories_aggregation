@@ -119,6 +119,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   if (!is.na(sub_dataset)){
     unique_id = unique(dataset_calendar[[sub_dataset]])
   }
+  length_unique_id <- length(unique_id)
   
   output_data_detail <- NULL
   compteur=0
@@ -142,8 +143,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     if (length(polygons)>0){
       ######################## Intersection between points and polygons
       intersection <- gIntersection(sp_points,polygons,byid=T, drop_lower_td = T)
-      
-      
+
       # NOTE : id of a spatial polygon
       # intersect_buffer[i]@polygons[[1]]@ID
       
@@ -237,7 +237,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         }
         
         compteur = compteur +1
-        cat(paste0("\n             ", compteur, " object(s) treated."))
+        cat(paste0("\n             ", compteur, " object(s) treated over",length_unique_id,"."))
         
         ### bbox
         if (compteur>1){
