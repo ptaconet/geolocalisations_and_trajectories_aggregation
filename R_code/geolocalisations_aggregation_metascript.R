@@ -185,7 +185,8 @@ if("program" %in% colnames(dataset)){
 
 
 ## nom de colonne obligatoire : time, lat, lon
-output <- geolocalisations_aggregation(raw_dataset=dataset,spatial_reso=spatial_reso,latmin=latmin,latmax=latmax,lonmin=lonmin,lonmax=lonmax,
+output <- geolocalisations_aggregation(raw_dataset=dataset,spatial_reso=spatial_reso,latmin=latmin,
+                                       latmax=latmax,lonmin=lonmin,lonmax=lonmax,data_crs =data_crs
                            firstdate=first_date,finaldate=final_date,temporal_reso=temporal_reso,
                            temporal_reso_unit=temporal_reso_unit,aggregate_data=aggregate_data,
                            method_asso=method_asso, aggregation_parameters=agg_parameters,
