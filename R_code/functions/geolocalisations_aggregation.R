@@ -309,7 +309,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   temporal_resolution <- temporal_reso
   temporal_resolution_unit <- temporal_reso_unit
 
-  if (spatial_grid==T){
+  if (is.null(spatial_zone)){
     step_3 <- paste0("step3: A regular grid composed of square polygons was created. The spatial extent is ",bbox_extent," with a resolution of ", spatial_resolution," decimal degrees.")
   } else {
     step_3 <- paste0("step3: Spatial data are extract from a input shapefile.")
