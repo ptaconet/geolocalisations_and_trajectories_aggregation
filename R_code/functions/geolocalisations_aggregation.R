@@ -246,8 +246,15 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         } else {
           bbox <- gEnvelope(polygons)
         }
+        
+      } else {
+        compteur = compteur +1
+        cat("No intersection between the subset ",id_subdata," and spatial zone")
       }
       
+    } else {
+      compteur = compteur +1
+      cat("No intersection between the subset ",id_subdata," and spatial zone")
     }
 
   }
