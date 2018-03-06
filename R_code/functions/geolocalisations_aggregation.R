@@ -9,18 +9,18 @@
 # 3. number_fad_and_days : calculate and aggregate the number of FAD and days by dimensions, by space and by time
 
 
-geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,method_asso="equaldistribution",aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
+geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,data_crs="+init=epsg:4326 +proj=longlat +datum=WGS84" ,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="month",program_observe=F, aggregate_data=F,method_asso="equaldistribution",aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
   
   #' @name geolocation_aggregation
   #' @title Geolocation aggregation by dimensions, by space and by time
   #' @description Take a data frame with geolocalisation dimension ("lon" for longitude and "lat" for latitude), date time dimension ("time"), several data dimensions (like flag, gear...), a variable to aggregate (like catch, effort, catch at size). Generate a spatial grid with input parameter (grid extent, spatial resolution) or take an input shapefile with spatial polygons from the package sp and "label_id_geom". Generate a continuous calendar of period (day, 1/2 month, month, year) with input parameter (calendar limits, temporal resolution and temporal resolution unit). The algorithm associates input data with intersect spatial zone and intersect calendar period. When geolocalisation data are on spatial zone boundaries, 3 methods are available: (1) "equaldistribution": variable is distributed between spatial zones (equal share); (2) "random": spatial zone is chosen randomly from intersected spatial zones;  (3) "cwp": Coordinating Working Party on fishery Statistics rules establish by the Food and Agriculture Organization of the United Nations FAO. (for more information: http://www.fao.org/fishery/cwp/en). If aggregate_data is TRUE, aggregate input data by data dimensions, by space and by time. if not, the algorithm associates input data with intersect spatial zone and intersect calendar period.   
-  #' 
   #' @param raw_dataset dataframe with geolocalisation objects and containing: object identifier, data dimensions,"time" for geolocalisation date time , "lat" for latitude of the position in degree, "lon"  for longitude of the position in degree, type = data.frame;
   #' @param spatial_reso spatial resolution of the grid in degree, type = integer;
   #' @param latmin smallest latitude for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param latmax biggest latitude wanted for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param lonmin smallest longitude for the spatial grid in degree (range: -180 to 180), type = integer;
   #' @param lonmax biggest longitude wanted for the spatial grid in degree (range: -180 to 180), type = integer;
+  #' @param data_crs a character string of projection arguments of data. The arguments must be entered exactly as in the PROJ.4 documentation, value="+init=epsg:4326 +proj=longlat +datum=WGS84", type = character;
   #' @param firstdate first date of the calendar, format : YYYY-MM-DD, type = character;
   #' @param finaldate final date of the calendar, format : YYYY-MM-DD, type = character;
   #' @param temporal_reso temporal resolution of the calendar in day, month or year (see: temporal_reso_unit). Note: for 1/2 month put temporal_reso=1/2 and temporal_reso_unit="month" , type = integer;
