@@ -118,6 +118,8 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   # separate data in some parts
   if (!is.na(sub_dataset)){
     unique_id = unique(dataset_calendar[[sub_dataset]])
+  } else {
+    unique_id = 1
   }
   length_unique_id <- length(unique_id)
   
@@ -128,6 +130,8 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     
     if (!is.na(sub_dataset)){
       dataset <- subset(dataset_calendar,dataset_calendar[[sub_dataset]]==id_subdata)
+    } else {
+      dataset <- dataset_calendar
     }
     
     ######################## Create spatial point
