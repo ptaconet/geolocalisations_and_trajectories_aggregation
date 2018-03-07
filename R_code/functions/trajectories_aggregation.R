@@ -369,14 +369,18 @@ preprocessing_data_trajectories <- function(dataset,list_dim_output,colname_idob
   #'
   #' @usage dataset <- preprocessing_data_trajectories(dataset=dataset_sql,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
 
+
+  ### modify the dataset column name 
   colnames(dataset)[colnames(dataset)==colname_time] <- "time"
   colnames(dataset)[colnames(dataset)==colname_idobject] <- "id_object"
   colnames(dataset)[colnames(dataset)==colname_lat] <- "lat"
   colnames(dataset)[colnames(dataset)==colname_lon] <- "lon"
   colnames(dataset)[colnames(dataset)==colname_idtraj] <- "id_traj"
+
   
   dataset$id_traj <- as.numeric(dataset$id_traj)
   
+  ### extract wanted column
   list_dim_ <- unique(c(list_dim_output,"id_object", "id_traj","time", "lat", "lon"))
   dataset <- dataset[,list_dim_]
   

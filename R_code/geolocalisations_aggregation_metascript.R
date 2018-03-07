@@ -22,7 +22,7 @@
 # wps.in: id = temporal_reso_unit , type = character, title = Time unit of temporal resolution, value = "day|month|year";
 # wps.in: id = first_date , type = date, title = First date of calendar, value = "1800-01-01";
 # wps.in: id = final_date , type = date, title = Final date of calendar, value = "2100-01-01";
-# wps.in: id = method_asso, type character. title = Method used for data aggregation random method or equal distribution method are available. Value : "random|equaldistribution"
+# wps.in: id = method_asso, type character. title = Method used for data aggregation random method (if a fishing data is on several polygons (borders case) the polygon is chosen randomly), equal distribution method (if a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons) or cwp method (The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)) are available. Value : "random|equaldistribution|cwp"
 # wps.in: id = aggregate_data, type = boolean. title = Put TRUE if for aggregated data in the output, value : "TRUE|FALSE"
 # wps.in: id = program_observe, type = boolean. title = For data from observe database, put TRUE to have the dimension "program" in output data, value : "TRUE|FALSE"
 # wps.in: id = file_path_metadata_model, type = character. title = File path of the metadata model;
@@ -51,7 +51,7 @@ source("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajecto
 tic.clear()
 tic()
 
-## Set working directory
+## Set working directory of current file
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################### ######################### ######################### 
 # Initialisation
@@ -185,9 +185,11 @@ if("program" %in% colnames(dataset)){
 
 
 ## nom de colonne obligatoire : time, lat, lon
-output <- geolocalisations_aggregation(raw_dataset=dataset,spatial_reso=spatial_reso,latmin=latmin,latmax=latmax,lonmin=lonmin,lonmax=lonmax,
+output <- geolocalisations_aggregation(raw_dataset=dataset,spatial_reso=spatial_reso,latmin=latmin,
+                                       latmax=latmax,lonmin=lonmin,lonmax=lonmax,data_crs =data_crs,
                            firstdate=first_date,finaldate=final_date,temporal_reso=temporal_reso,
-                           temporal_reso_unit=temporal_reso_unit,aggregate_data=aggregate_data,aggregation_parameters=agg_parameters,
+                           temporal_reso_unit=temporal_reso_unit,aggregate_data=aggregate_data,
+                           method_asso=method_asso, aggregation_parameters=agg_parameters,
                            spatial_zone=spatial_zone,label_id_geom=label_id_geom)
 
 output_dataset <- output$data
@@ -226,6 +228,7 @@ output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=m
 # ######################### ######################### ######################### 
 
 if(dir.exists("output/geolocalisations_aggregation")==F){
+  dir.create("output")
   dir.create("output/geolocalisations_aggregation")
 }
 filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")

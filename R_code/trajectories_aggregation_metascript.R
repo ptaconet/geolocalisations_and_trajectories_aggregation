@@ -37,7 +37,7 @@
 
 
 ######################## Packages
-all_packages <- c("data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang")
+all_packages <- c("rstudioapi","data.table","dplyr","lubridate","raster","rgeos","sp","rgdal","stringr","tictoc","rlang", "SDLfilter")
 for(package in all_packages){
   if (!require(package,character.only = TRUE)) {
     install.packages(package)  
@@ -53,23 +53,23 @@ source("https://raw.githubusercontent.com/cdalleau/geolocations_and_trajectories
 tic.clear()
 tic()
 
-######################### Set working directory
+######################### Set working directory of current file
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ######################## Input data 
 
 ## name of the csv input, this file has to be a folder named "input" (with extension)
-csv_input_name <- "extract_fad.csv"
+csv_input_name <- "fad_extract_5000.csv"
 file_path_input_data <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/trajectories_aggregation/",csv_input_name)
 public_link_input_data <- NA
 institute_source <- "IRD"
 ## file caracteristics (object_type in lower case)
 object_type <- "fad" 
 colname_idobject="fad_id"
-colname_idtraj= "section"
-colname_time= "time"
-colname_lat= "lat"
-colname_lon = "lon"
+colname_idtraj= "section_id"
+colname_time= "date"
+colname_lat= "lat_fad"
+colname_lon = "lon_fad"
 
 ## buffer size from the object in km
 buffer_size <- 10 # km
@@ -155,8 +155,13 @@ input_dataset <- read.csv(file_path_input_data, sep=",", header = T)
 # ######################### ######################### ######################### 
 # # Treatment
 # ######################### ######################### ######################### 
-### Pre-processing to select column in the input data and change the name of few column ("id_object", "id_traj", "time", "lat", "lon")
-dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject, colname_idtraj,colname_time,colname_lat,colname_lon)
+### Pre-processing to select column in the input data and change the name of few column 
+### for trajectories_aggregation function ("id_object", "id_traj", "time", "lat", "lon")
+
+
+dataset <- preprocessing_data_trajectories(dataset=input_dataset,list_dim_output,colname_idobject,
+                                           colname_idtraj, colname_time,colname_lat,colname_lon)
+
 rm(input_dataset)
 
 ### test
@@ -164,9 +169,9 @@ rm(input_dataset)
 
 ### treatment
 output <- trajectories_aggregation(dataset,buffer_size,spatial_reso,lat_min,lat_max
-                                       ,lon_min,lon_max,firstdate=first_date,finaldate=final_date,temporal_reso,temporal_reso_unit,
-                                       aggregate_data, list_dim_output=list_dim_output,spatial_zone=spatial_zone ,
-                                       label_id_geom=label_id_geom)
+                                   ,lon_min,lon_max,firstdate=first_date,finaldate=final_date,temporal_reso,temporal_reso_unit,
+                                   aggregate_data, list_dim_output=list_dim_output,spatial_zone=spatial_zone ,
+                                   label_id_geom=label_id_geom)
 
 ### Store dataset
 output_dataset <- output$data
@@ -204,6 +209,7 @@ output_metadata <- metadata_by_var(vars_label_list,metadata_model=metadata_input
 # ######################### ######################### ######################### 
 
 if(dir.exists("output/trajectories_aggregation")==F){
+  dir.create("output")
   dir.create("output/trajectories_aggregation")
 }
 filepath_dataset = paste("output/trajectories_aggregation/",identifier,".csv", sep="")

@@ -87,7 +87,7 @@ aggregation_parameters <- function(){
   #' 
   #' @param program Put TRUE to add fishing program in output dimensions, type = boolean;
   #' 
-  #' @return Return a list with aggregation parameters for function geolocalisation_aggregation.R . This list contains : list of dimension to aggregate data, name of the fact (like: "catch", "effort", "catch_at_size", "fad"), database name, specify if the function calculate the number of days, the variable to sum, the dimension object identifier (like : "c_bat")
+  #' @return Return a list with aggregation parameters for function geolocalisation_aggregation.R . This list contains : list of dimension to aggregate data, name of the fact (like: "catch", "effort", "catch_at_size", "fad"), database name, specify if the function calculate the number of days, the variable to sum, the dimension to subset correctly the data (memory error)
   #' 
   #' @author Chloé Dalleau, \email{chloe.dalleau@ird.fr}
   #' 
@@ -99,10 +99,10 @@ aggregation_parameters <- function(){
   bdd_name = "fad"
   calculation_of_number_days = T
   var_aggregated_value = NULL
-  object_identifier = "fad_id"
+  sub_dataset = "fad_id"
   
-  parameters <- list(list_dimensions_output,var_aggregated_value, object_identifier,fact_name,calculation_of_number_days,bdd_name)
-  names(parameters) <- c("list_dimensions_output","var_aggregated_value","object_identifier","fact_name","calculation_of_number_days","bdd_name")
+  parameters <- list(list_dimensions_output,var_aggregated_value, sub_dataset,fact_name,calculation_of_number_days,bdd_name)
+  names(parameters) <- c("list_dimensions_output","var_aggregated_value","sub_dataset","fact_name","calculation_of_number_days","bdd_name")
   
   return(parameters)
 }

@@ -434,7 +434,7 @@ aggregation_parameters <- function(program=F){
   #' 
   #' @param program Put TRUE to add fishing program in output dimensions, type = boolean;
   #' 
-  #' @return Return a list with aggregation parameters for function geolocalisation_aggregation.R . This list contains : list of dimension to aggregate data, name of the fact (like: "catch", "effort", "catch_at_size", "fad"), database name, the variable to sum, the dimension object identifier (like : "c_bat")
+  #' @return Return a list with aggregation parameters for function geolocalisation_aggregation.R . This list contains : list of dimension to aggregate data, name of the fact (like: "catch", "effort", "catch_at_size", "fad"), database name, the variable to sum, the dimension to subset correctly the data (memory error)
   #' 
   #' @author Chloé Dalleau, \email{chloe.dalleau@ird.fr}
   #' 
@@ -446,10 +446,10 @@ aggregation_parameters <- function(program=F){
   fact_name = "catch"
   bdd_name = "observe"
   var_aggregated_value = "v_catch"
-  object_identifier = "c_bat"
+  sub_dataset = "c_bat"
   
-  parameters <- list(list_dimensions_output,var_aggregated_value, object_identifier,fact_name,bdd_name)
-  names(parameters) <- c("list_dimensions_output","var_aggregated_value","object_identifier","fact_name","bdd_name")
+  parameters <- list(list_dimensions_output,var_aggregated_value, sub_dataset,fact_name,bdd_name)
+  names(parameters) <- c("list_dimensions_output","var_aggregated_value","sub_dataset","fact_name","bdd_name")
   
   return(parameters)
 }

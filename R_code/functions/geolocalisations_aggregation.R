@@ -9,25 +9,26 @@
 # 3. number_fad_and_days : calculate and aggregate the number of FAD and days by dimensions, by space and by time
 
 
-geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="m",program_observe=F, aggregate_data=F,aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
+geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,latmax=90,lonmin=-180,lonmax=180,data_crs="+init=epsg:4326 +proj=longlat +datum=WGS84" ,firstdate="1900-01-01",finaldate=Sys.Date(),temporal_reso=1,temporal_reso_unit="month",program_observe=F, aggregate_data=F,method_asso="equaldistribution",aggregation_parameters=NULL,spatial_zone=NULL, label_id_geom=NULL){
   
   #' @name geolocation_aggregation
   #' @title Geolocation aggregation by dimensions, by space and by time
   #' @description Take a data frame with geolocalisation dimension ("lon" for longitude and "lat" for latitude), date time dimension ("time"), several data dimensions (like flag, gear...), a variable to aggregate (like catch, effort, catch at size). Generate a spatial grid with input parameter (grid extent, spatial resolution) or take an input shapefile with spatial polygons from the package sp and "label_id_geom". Generate a continuous calendar of period (day, 1/2 month, month, year) with input parameter (calendar limits, temporal resolution and temporal resolution unit). The algorithm associates input data with intersect spatial zone and intersect calendar period. When geolocalisation data are on spatial zone boundaries, 3 methods are available: (1) "equaldistribution": variable is distributed between spatial zones (equal share); (2) "random": spatial zone is chosen randomly from intersected spatial zones;  (3) "cwp": Coordinating Working Party on fishery Statistics rules establish by the Food and Agriculture Organization of the United Nations FAO. (for more information: http://www.fao.org/fishery/cwp/en). If aggregate_data is TRUE, aggregate input data by data dimensions, by space and by time. if not, the algorithm associates input data with intersect spatial zone and intersect calendar period.   
-  #' 
   #' @param raw_dataset dataframe with geolocalisation objects and containing: object identifier, data dimensions,"time" for geolocalisation date time , "lat" for latitude of the position in degree, "lon"  for longitude of the position in degree, type = data.frame;
   #' @param spatial_reso spatial resolution of the grid in degree, type = integer;
   #' @param latmin smallest latitude for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param latmax biggest latitude wanted for the spatial grid in degree (range: -90 to 90), type = integer;
   #' @param lonmin smallest longitude for the spatial grid in degree (range: -180 to 180), type = integer;
   #' @param lonmax biggest longitude wanted for the spatial grid in degree (range: -180 to 180), type = integer;
+  #' @param data_crs a character string of projection arguments of data. The arguments must be entered exactly as in the PROJ.4 documentation, value="+init=epsg:4326 +proj=longlat +datum=WGS84", type = character;
   #' @param firstdate first date of the calendar, format : YYYY-MM-DD, type = character;
   #' @param finaldate final date of the calendar, format : YYYY-MM-DD, type = character;
   #' @param temporal_reso temporal resolution of the calendar in day, month or year (see: temporal_reso_unit). Note: for 1/2 month put temporal_reso=1/2 and temporal_reso_unit="month" , type = integer;
   #' @param temporal_reso_unit temportal resolution unit od calendar, accepted value : "day" "month" "year", type = character;
   #' @param program_observe Put TRUE if you want the dimension program (observe database) in the output, type = boolean;
   #' @param aggregate_data Put TRUE if you want aggregated data in the output, type = boolean;
-  #' @param aggregation_parameters if aggregate_data is TRUE list of "list_dimensions_output": the list of dimensions from input data.frame and for the output data, "var_aggregated_value": colname used in the input dataframe for the variable which will be aggregate, "object_identifier": colname used in the input dataframe for the vessel or FAD identifier, "fact_name": name of the fact (value: "catch", "catch_at_size", "effort", "fad"), "calculation_of_number_days" boolean to indicate if the number of day (by dimensions, space and time) is calculated (only for FAD), type=list
+  #' @param method_asso Method used for data aggregation random method (if a fishing data is on several polygons (borders case) the polygon is chosen randomly), equal distribution method (if a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons) or cwp method (The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)) are available. Value : "random|equaldistribution|cwp", type = character;
+  #' @param aggregation_parameters if aggregate_data is TRUE list of "list_dimensions_output": the list of dimensions from input data.frame and for the output data, "var_aggregated_value": colname used in the input dataframe for the variable which will be aggregate, "sub_datasaet": colname used in the input dataframe for subset the input data (the function can create error memory if the input data are too large) if no corresponding column put NA , "fact_name": name of the fact (value: "catch", "catch_at_size", "effort", "fad"), "calculation_of_number_days" boolean to indicate if the number of day (by dimensions, space and time) is calculated (only for FAD), type=list
   #' @param spatial_zone shapefile of your spatial zone with the same CRS of data if you use a irregular spatial zone (like : EEZ), type = SpatialPolygonDataframe;
   #' @param label_id_geom label use for spatial geometry in your shapefile if you use a irregular spatial zone (like : EEZ), type = character;
   #'
@@ -63,7 +64,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   ### aggragation parameters
   list_dimensions_output = agg_parameters$list_dimensions_output
   var_aggregated_value = agg_parameters$var_aggregated_value
-  object_identifier = agg_parameters$object_identifier
+  sub_dataset = agg_parameters$sub_dataset
   fact_name = agg_parameters$fact_name
   if (fact_name =="fad"){number_days = agg_parameters$calculation_of_number_days}
   
@@ -115,14 +116,23 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   # Error in RGEOSBinPredFunc(spgeom1, spgeom2, byid, func) :
   # rgeos_binpredfunc_prepared: maximum returned dense matrix size exceeded
   # separate data in some parts
-  unique_id = unique(dataset_calendar[[object_identifier]])
+  if (!is.na(sub_dataset)){
+    unique_id = unique(dataset_calendar[[sub_dataset]])
+  } else {
+    unique_id = 1
+  }
+  length_unique_id <- length(unique_id)
   
   output_data_detail <- NULL
   compteur=0
-  id_bat=26 # 26  68  80 120 286 427
-  for (id_bat in unique_id){
+  
+  for (id_subdata in unique_id){
     
-    dataset <- subset(dataset_calendar,dataset_calendar[[object_identifier]]==id_bat)
+    if (!is.na(sub_dataset)){
+      dataset <- subset(dataset_calendar,dataset_calendar[[sub_dataset]]==id_subdata)
+    } else {
+      dataset <- dataset_calendar
+    }
     
     ######################## Create spatial point
     sp_points <- SpatialPointsDataFrame(dataset[,c("lon","lat")], dataset,proj4string = CRS(data_crs))
@@ -137,8 +147,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
     if (length(polygons)>0){
       ######################## Intersection between points and polygons
       intersection <- gIntersection(sp_points,polygons,byid=T, drop_lower_td = T)
-      
-      
+
       # NOTE : id of a spatial polygon
       # intersect_buffer[i]@polygons[[1]]@ID
       
@@ -232,7 +241,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         }
         
         compteur = compteur +1
-        cat(paste0("\n             ", compteur, " object(s) treated."))
+        cat(paste0("\n             ", compteur, " object(s) treated over",length_unique_id,"."))
         
         ### bbox
         if (compteur>1){
@@ -241,8 +250,15 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
         } else {
           bbox <- gEnvelope(polygons)
         }
+        
+      } else {
+        compteur = compteur +1
+        cat("No intersection between the subset ",id_subdata," and spatial zone")
       }
       
+    } else {
+      compteur = compteur +1
+      cat("No intersection between the subset ",id_subdata," and spatial zone")
     }
 
   }
@@ -304,7 +320,7 @@ geolocalisations_aggregation <- function(raw_dataset,spatial_reso=1,latmin=-90,l
   temporal_resolution <- temporal_reso
   temporal_resolution_unit <- temporal_reso_unit
 
-  if (spatial_grid==T){
+  if (is.null(spatial_zone)){
     step_3 <- paste0("step3: A regular grid composed of square polygons was created. The spatial extent is ",bbox_extent," with a resolution of ", spatial_resolution," decimal degrees.")
   } else {
     step_3 <- paste0("step3: Spatial data are extract from a input shapefile.")
