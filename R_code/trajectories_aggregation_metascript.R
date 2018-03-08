@@ -193,7 +193,7 @@ add_metadata <- output$metadata_list
 min_date <- as_date(min(output_dataset$time_start))
 max_date <- as_date(max(output_dataset$time_end))
 start_date <- str_replace_all(min_date,"-","_")
-final_date <- str_replace_all(max_date,"-","_")
+final_date <- str_replace_all(max_date,"-","_") 
 spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
 temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
 temporal_resolution_unit_id <- add_metadata$temporal_resolution_unit
