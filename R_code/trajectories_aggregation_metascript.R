@@ -193,10 +193,11 @@ add_metadata <- output$metadata_list
 min_date <- as_date(min(output_dataset$time_start))
 max_date <- as_date(max(output_dataset$time_end))
 start_date <- str_replace_all(min_date,"-","_")
-final_date <- str_replace_all(max_date,"-","_")
+final_date <- str_replace_all(max_date,"-","_") 
 spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
 temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
-identifier <- paste0("atlantic_indian_oceans_",object_type,if(aggregate_data==T){"_aggregated"},"_trajectories_",start_date,"_",final_date,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg","_")}else{label_spatial_zone},temporal_resolution_id,temporal_reso_unit,"_",institute_source)
+temporal_resolution_unit_id <- add_metadata$temporal_resolution_unit
+identifier <- paste0("atlantic_indian_oceans_",object_type,if(aggregate_data==T){"_aggregated"},"_trajectories_",start_date,"_",final_date,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg","_")}else{label_spatial_zone},temporal_resolution_id,temporal_resolution_unit_id,"_",institute_source)
 # add identifier in metadata to add
 add_metadata$identifier <- identifier
 
