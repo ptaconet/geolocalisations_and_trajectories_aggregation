@@ -338,8 +338,11 @@ trajectories_aggregation <- function(raw_dataset, buffer_size=10,spatial_reso=1,
   lineage <- paste0("step1: Through a dedicated R script,", object_type," trajectories was created based on geo-localize points. Then the trajectories distance, explored surface and the number of trajectories are calculed by time and by space. These data are aggregated by time and by space. step2:  The dataset was exported in CSV.")
   spatial_resolution <-  spatial_reso
   buffer_size <- buffer_size
-  metadata <- list(title, date,spatial_resolution,summary, lineage, buffer_size)
-  names(metadata) <- c( "title", "date", "spatial_resolution", "summary", "lineage", "buffer_size")
+  temporal_resolution <- temporal_reso
+  temporal_resolution_unit <- temporal_reso_unit
+  metadata <- list(title, date,spatial_resolution,summary, lineage, buffer_size, temporal_resolution, temporal_resolution_unit)
+  names(metadata) <- c( "title", "date", "spatial_resolution", "summary", "lineage", "buffer_size", "temporal_resolution","temporal_resolution_unit")
+  
   
   output <- list(output_data, metadata)
   names(output) <- c("data", "metadata_list")
