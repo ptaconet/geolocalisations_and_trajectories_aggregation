@@ -82,6 +82,7 @@ temporal_reso<-as.numeric(temporal_reso)
 spatial_reso<-as.numeric(spatial_reso)
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
+
 file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
 source(file_path_parameter)
 
@@ -217,7 +218,7 @@ output_dataset <- output$data
 #  dir.create("output/geolocalisations_aggregation")
 #}
 ##filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
-filepath_dataset = paste("/home/ptaconet/Bureau/docs Chloé/",file_name,".csv", sep="")
+filepath_dataset = paste("/home/ptaconet/Bureau/docs Chloé/tests_aggregation/",file_name,".csv", sep="")
 #filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")
 
 write.csv(output_dataset, file = filepath_dataset, row.names = FALSE)
