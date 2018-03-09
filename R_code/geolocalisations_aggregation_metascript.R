@@ -29,6 +29,28 @@
 # wps.out: id = output_data, type = text/zip, title = Aggregated data by space and by time; 
 #########################
 
+# file_name
+# db_user
+# db_password
+# sql_limit
+# latmin
+# latmax
+# lonmin
+# lonmax
+# spatial_grid
+# spatial_reso
+# spatial_zone
+# label_id_geom
+# label_spatial_zone
+# temporal_reso
+# temporal_reso_unit
+# first_date
+# final_date
+# method_asso
+# aggregate_data
+# program_observe
+
+
 ######################### ######################### ######################### 
 # Packages
 ######################### ######################### ######################### 
@@ -37,7 +59,7 @@
 rm(list=ls())
 
 # Packages
-all_packages <- c("rstudioapi","RPostgreSQL","tictoc","data.table","dplyr","sp","rgeos","rgdal","lubridate","stringr","rlang")
+all_packages <- c("RPostgreSQL","tictoc","data.table","dplyr","sp","rgeos","rgdal","lubridate","stringr","rlang")
 for(package in all_packages){
   if (!require(package,character.only = TRUE)) {
     install.packages(package)  
@@ -52,82 +74,43 @@ tic.clear()
 tic()
 
 ## Set working directory of current file
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ######################### ######################### ######################### 
 # Initialisation
 ######################### ######################### ######################### 
-
-### Import data from database
-## fact selection
-file_name <- "catch_balbaya"
-file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
-source(file_path_parameter)
-## SQL limit (put NULL if no limit)
-sql_limit <- 7000
-
-# CRS of sptial data
+latmin <- as.numeric(latmin)
+latmax <- as.numeric(latmax)
+lonmin <- as.numeric(lonmin)
+lonmax <- as.numeric(lonmax)
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
-### spatial resolution
-spatial_grid <- T
-## zone extent : latittude (in degree) range -90:90, longitude (in degree) range -180:180
-latmin <- -90
-latmax <- 90
-lonmin <- -180
-lonmax <- 180
-if (spatial_grid==T) {
-  ### Definition of spatial grid, squares compound
-  ## data spatial resoltion in degree
-  spatial_reso <- 5
-  spatial_zone=NULL
-  label_id_geom = NULL
-  label_spatial_zone = "grid"
-} else {
+file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
+source(file_path_parameter)
+
+#if (spatial_zone==FALSE) {
   ### EEZ exemple
   ## latitude and longitude 
-  xmin_plot=latmin
-  xmax_plot=latmax
-  ymin_plot=lonmin
-  ymax_plot=lonmax
+   #xmin_plot=latmin
+   #xmax_plot=latmax
+   #ymin_plot=lonmin
+   #ymax_plot=lonmax
   ## Get the EEZ from the marineregions webiste
-  dsn<-paste("WFS:http://geo.vliz.be/geoserver/MarineRegions/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:eez&maxFeatures=200&BBOX=",xmin_plot,",",ymin_plot,",",xmax_plot,",",ymax_plot,sep="")
-  shapefile_name <- "MarineRegions:eez"
-  shapefile<-readOGR(dsn,shapefile_name)
+#dsn<-paste("WFS:http://geo.vliz.be/geoserver/MarineRegions/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=MarineRegions:eez&maxFeatures=200&BBOX=",xmin_plot,",",ymin_plot,",",xmax_plot,",",ymax_plot,sep="")
+#shapefile_name <- "MarineRegions:eez"
+#shapefile<-readOGR(dsn,shapefile_name)
   ## Change the crs of spatial zone for the data crs 
-  spatial_zone=spTransform(shapefile, CRS(data_crs))
+#spatial_zone=spTransform(shapefile, CRS(data_crs))
   ## indicate the label of the spatial zone (see with str(spatial_zone))
-  label_id_geom <- "geoname"
+#label_id_geom <- "geoname"
   # name of the layer (useful for metadata)
-  label_spatial_zone <- "EEZ"
+#label_spatial_zone <- "EEZ"
   ## Plot 
   # col_eez<-rgb(red=0, green=0, blue=102,alpha=70,maxColorValue=255)
   # map("world", fill=TRUE, col="gray81", bg="white", xlim=c(xmin_plot,xmax_plot),ylim=c(ymin_plot,ymax_plot))
   # plot(shape,col=col_eez,add=TRUE,lwd=0.6,border="bisque4")
-  spatial_reso <-NULL
-} 
+#spatial_reso <-NULL
+#} 
 
-### Definition of calendar
-## time extent , tz = "UTC"
-first_date <-"1800-01-01"
-final_date <- "2017-12-31"
-## for mi-month put temporal_reso = 1/2 and temporal_reso_unit "month"
-temporal_reso <- 1
-temporal_reso_unit <- "month"
 
-### Processing of data
-# method of association between fishery data and spatial zone when a location is on a boundary
-# methods are :"equaldistribution", "random" or "cwp"
-# * "equaldistribution" method: If a fishing data is on several polygons (borders case) the fishing value are distribuated between these polygons
-# * "random": If a fishing data is on several polygons (borders case) the polygon is chosen randomly.
-# * "cwp" The processing attributes each geolocation to an unique polygon according to CWP rules (from FAO) (http://www.fao.org/fishery/cwp/en)
-method_asso = "random"
-
-### Put true to have aggregated data
-aggregate_data =T
-### Put true to have program dimension for observe database
-program_observe=F
-
-file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv"
 
 cat("Initialisation ... ok \n")
 
@@ -149,8 +132,8 @@ warning("Please inform the database manager of your database usage. \n This data
 parameter_bdd <- bdd_parameters(first_date,final_date,sql_limit)
 
 # Add the user and password for database access
-parameter_bdd$user <- "***"
-parameter_bdd$password <- "***"
+parameter_bdd$user <- db_user
+parameter_bdd$password <- db_password
 
 con <- dbConnect(drv, dbname = parameter_bdd$dbname,
                  host = parameter_bdd$host, port = parameter_bdd$port,
@@ -201,38 +184,41 @@ output_dataset <- output$data
 # ######################### ######################### ######################### 
 ### Intialisation for metadata creation
 # metadata model
-metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
+##file_path_metadata_model <- "https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/metadata_input.csv"
+
+##metadata_input <- read.csv(file_path_metadata_model, sep=",", header = T)
 # metadata identifier to select the right metadata model
-metadata_id <- paste(file_name,label_spatial_zone,sep="_")
+##metadata_id <- paste(file_name,label_spatial_zone,sep="_")
 # metadata created throughout treatment
-add_metadata <- output$metadata_list
+##add_metadata <- output$metadata_list
 # add SQL query
-add_metadata$table_sql_query <- parameter_bdd$query
+##add_metadata$table_sql_query <- parameter_bdd$query
 # create identifier file name
-min_date <- as_date(min(output_dataset$time_start))
-max_date <- as_date(max(output_dataset$time_end))
-start_date <- str_replace_all(min_date,"-","_")
-final_date <- str_replace_all(max_date,"-","_")
-spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
-temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
+##min_date <- as_date(min(output_dataset$time_start))
+##max_date <- as_date(max(output_dataset$time_end))
+##start_date <- str_replace_all(min_date,"-","_")
+##final_date <- str_replace_all(max_date,"-","_")
+##spatial_resolution_id <- str_replace(as.character(add_metadata$spatial_resolution),fixed("."),"_")
+##temporal_resolution_id <- str_replace(add_metadata$temporal_resolution,fixed("."),"_")
 ### data identifier
-identifier <- paste0("indian_atlantic_oceans_",agg_parameters$fact_name,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg")}else{label_spatial_zone},"_",temporal_resolution_id,
-                     add_metadata$temporal_resolution_unit,"_",start_date,"_",final_date,"_",method_asso,"_",agg_parameters$bdd_name, sep="")
+##identifier <- paste0("indian_atlantic_oceans_",agg_parameters$fact_name,"_",if(is.null(spatial_zone)){paste0(spatial_resolution_id,"deg")}else{label_spatial_zone},"_",temporal_resolution_id,
+##                     add_metadata$temporal_resolution_unit,"_",start_date,"_",final_date,"_",method_asso,"_",agg_parameters$bdd_name, sep="")
 
 
 
-output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=metadata_id,dataset_id=identifier,add_metadata=add_metadata)
+##output_metadata <- metadata_generate(metadata_model=metadata_input,metadata_id=metadata_id,dataset_id=identifier,add_metadata=add_metadata)
 
 # ######################### ######################### ######################### 
 # # Create CSV file
 # ######################### ######################### ######################### 
 
-if(dir.exists("output/geolocalisations_aggregation")==F){
-  dir.create("output")
-  dir.create("output/geolocalisations_aggregation")
-}
-filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
-filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")
+#if(dir.exists("output/geolocalisations_aggregation")==F){
+#  dir.create("output")
+#  dir.create("output/geolocalisations_aggregation")
+#}
+##filepath_dataset = paste("output/geolocalisations_aggregation/",identifier,".csv", sep="")
+filepath_dataset = paste("/home/ptaconet/Bureau/docs Chloé/",file_name,".csv", sep="")
+#filepath_metadata = paste("output/geolocalisations_aggregation/metadata_",identifier,".csv", sep="")
 
 write.csv(output_dataset, file = filepath_dataset, row.names = FALSE)
-write.csv(output_metadata, file = filepath_metadata, row.names = FALSE)
+#write.csv(output_metadata, file = filepath_metadata, row.names = FALSE)
