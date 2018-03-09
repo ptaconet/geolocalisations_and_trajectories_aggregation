@@ -80,6 +80,7 @@ lonmin <- as.numeric(lonmin)
 lonmax <- as.numeric(lonmax)
 temporal_reso<-as.numeric(temporal_reso)
 spatial_reso<-as.numeric(spatial_reso)
+sql_limit<-as.numeric(sql_limit)
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
 
