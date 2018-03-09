@@ -78,6 +78,8 @@ latmin <- as.numeric(latmin)
 latmax <- as.numeric(latmax)
 lonmin <- as.numeric(lonmin)
 lonmax <- as.numeric(lonmax)
+temporal_reso<-as.numeric(temporal_reso)
+spatial_reso<-as.numeric(spatial_reso)
 data_crs <- "+init=epsg:4326 +proj=longlat +datum=WGS84"
 
 file_path_parameter <- paste0("https://raw.githubusercontent.com/cdalleau/geolocalisations_and_trajectories_aggregation/master/R_code/input/geolocalisations_aggregation/",file_name,".R")
@@ -138,6 +140,7 @@ con <- dbConnect(drv, dbname = parameter_bdd$dbname,
 
 ### Logging of dataframe
 # dataset contains non aggregated data
+cat("Querying DB ... ")
 dataset<-dbGetQuery(con, parameter_bdd$query)
 cat(" ok \n")
 
