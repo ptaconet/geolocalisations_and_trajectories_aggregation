@@ -55,9 +55,6 @@
 # Packages
 ######################### ######################### ######################### 
 
-# clean the global environnement
-rm(list=ls())
-
 # Packages
 all_packages <- c("RPostgreSQL","tictoc","data.table","dplyr","sp","rgeos","rgdal","lubridate","stringr","rlang")
 for(package in all_packages){
